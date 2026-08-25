@@ -6,3 +6,4 @@
 - No human participant identity or content was generated.
 - Planned exact-head CI enforcement and a 0.2.0 adopter-facing release.
 - Added the communication workflow, required-check binding and guide release.
+- Closed after exact-head validator approval and merge of PR #7.
