@@ -9,3 +9,5 @@
   required atomic adoption to remain within its own bounded slice.
 - Recorded a green atomic-adoption governance check and moved the ticket to
   publication while keeping it `IN_PROGRESS` until trusted merge.
+- Recorded the exact-head Validator App approval and trusted merge, then closed
+  the ticket from integrated `main` as a governance-only transaction.

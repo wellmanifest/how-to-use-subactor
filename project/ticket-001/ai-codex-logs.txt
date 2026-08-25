@@ -19,3 +19,8 @@ GOV-PASS: passed (0 errors, 0 warnings)
 
 $ git diff --check 0f7ddccc291d831199a824835ab70973c9df4271..HEAD
 [no output; exit 0]
+
+$ ./bin/dispatch-direct-pr.sh --owner wellmanifest --name how-to-use-subactor --pr 1 --ticket ticket-001 --wait-checks --merge --watch
+Approved exact head a424c93841d747e461cba54f84b8d73c9100acc6
+RESULT wellmanifest/how-to-use-subactor#1: MERGED mergedAt=2026-08-25T10:45:54Z
+Integrated commit 460c6c1b5de5fb01b2be6f387ff4c9fdef63a421

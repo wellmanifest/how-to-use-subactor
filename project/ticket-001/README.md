@@ -2,8 +2,8 @@
 
 - **ID**: ticket-001
 - **Owner**: agent:codex under SESSION_EXECUTION_AUTHORIZATION
-- **Status**: IN_PROGRESS
-- **Workflow state**: PUBLICATION
+- **Status**: DONE
+- **Workflow state**: DONE
 - **Created**: 2026-08-25
 
 ## Goal and scope
@@ -26,3 +26,11 @@ public Subactor usage guide is written in a separate dependent ticket.
 - Human participant: authorization was supplied in the active conversation;
   no `user-*` file was created or modified.
 - Agent participant: [ai-codex.md](ai-codex.md)
+
+## Publication evidence
+
+- Pull request: <https://github.com/wellmanifest/how-to-use-subactor/pull/1>
+- Validated head: `a424c93841d747e461cba54f84b8d73c9100acc6`
+- Independent approval: `ifuri-validator-agent[bot]`, decision `APPROVE`
+- Integrated commit: `460c6c1b5de5fb01b2be6f387ff4c9fdef63a421`
+- Merged: 2026-08-25 10:45:54 UTC
