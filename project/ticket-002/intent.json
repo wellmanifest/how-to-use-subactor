@@ -1,0 +1,97 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-002",
+  "summary": "Publish the Subactor human and LLM supervisor guide",
+  "workstream": "governance",
+  "classification": {
+    "kind": "FEATURE",
+    "priority": "P1",
+    "origin": "requested"
+  },
+  "allowedPaths": [
+    "README.md",
+    "CHANGELOG.md",
+    "VERSION",
+    "TODO.md",
+    "project/TICKETS.md",
+    "project/ticket-002/**"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md"
+  ],
+  "stacks": [],
+  "dependsOn": [
+    "ticket-001"
+  ],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "subactor",
+    "adopt": [
+      "wellmanifest/new-project",
+      "wellmanifest/llm",
+      "wellmanifest/poa",
+      "wellmanifest/logs"
+    ]
+  },
+  "delivery": {
+    "acceptedBaseSha": "6520cacdda71a2c60d5b2e3cfdb23402dedac5e7",
+    "targetBranch": "main",
+    "outcome": "Humans and LLM supervisors have one normative Subactor-first protocol for delegation, observation, evidence-led repair and completion across supported interfaces",
+    "nonGoals": [
+      "Change Subactor runtime, SubLLM or adopted Wellmanifest standards",
+      "Promise deployment-specific ports or MCP capabilities as universal",
+      "Authorize a supervisor to bypass Subactor for ordinary task execution",
+      "Treat an LLM recommendation or SubLLM route as mutation authority"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 25,
+    "budgets": {
+      "maxImplementationFiles": 3,
+      "maxAffectedComponents": 2,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Keep the standard in one public README with repository version carriers; distinguish semantic delegation from transport and authority from model routing",
+      "components": [
+        {
+          "name": "supervisor-guide",
+          "paths": [
+            "README.md"
+          ]
+        },
+        {
+          "name": "release-carriers",
+          "paths": [
+            "CHANGELOG.md",
+            "VERSION"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Close the PR without merge and preserve the branch"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-06",
+        "commands": [
+          "./project/governance-check.sh --actor agent --base 6520cacdda71a2c60d5b2e3cfdb23402dedac5e7",
+          "git diff --check 6520cacdda71a2c60d5b2e3cfdb23402dedac5e7..HEAD"
+        ],
+        "evidence": "project/ticket-002/ai-codex-logs.txt"
+      }
+    ]
+  }
+}

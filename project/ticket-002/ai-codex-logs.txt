@@ -1,0 +1,33 @@
+$ internal knowledge review
+Reviewed architecture.system-overview/v1,
+architecture.autonomy-execution-pipeline/v2 and
+architecture.founder-llm-doql-conversation/v2. The older
+architecture.autonomy-definition/v1 was stale on 2026-08-25 and was not reused
+as an unqualified durable assumption.
+
+$ interface observation
+Verified current Subactor CLI command discovery and performed bounded read-only
+health/status observations. Transient ports and deployment state will not be
+encoded as durable constants in the guide.
+
+$ dependency boundary review
+Verified wellmanifest/llm, wellmanifest/poa and subactor/subllm source contracts.
+SubLLM selects and invokes a model/provider route; it is not an authority grant
+service and does not own Subactor mutations.
+
+$ gh api repos/wellmanifest/llm/commits/main --jq .sha
+ee544f28bea9abd1e1758a8fea1328b0cd93ec96
+
+$ gh api repos/subactor/subllm/commits/main --jq .sha
+9f874bb85efd8f7b52e14804799e0a42f45b246a
+
+$ rg API endpoint verification against platform and core
+Verified /api/system/dashboard, /api/autonomy/control,
+/api/knowledge/context, /api/artifacts/context, /api/audit and
+/api/delegation/preview. Removed an unsupported /api/operations example.
+
+$ ./project/governance-check.sh --actor agent --base 6520cacdda71a2c60d5b2e3cfdb23402dedac5e7
+GOV-PASS: passed (0 errors, 0 warnings)
+
+$ git diff --check 6520cacdda71a2c60d5b2e3cfdb23402dedac5e7
+[no output; exit 0]
