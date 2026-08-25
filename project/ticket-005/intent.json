@@ -1,0 +1,88 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-005",
+  "summary": "Enforce communication conformance in CI",
+  "workstream": "governance",
+  "classification": {
+    "kind": "FEATURE",
+    "priority": "P1",
+    "origin": "requested"
+  },
+  "allowedPaths": [
+    ".github/workflows/communication-conformance.yml",
+    ".governance/required-checks.json",
+    "README.md",
+    "CHANGELOG.md",
+    "VERSION",
+    "TODO.md",
+    "project/TICKETS.md",
+    "project/ticket-005/**"
+  ],
+  "forbiddenPaths": ["project/ticket-*/user-*.md"],
+  "stacks": [],
+  "dependsOn": ["ticket-003"],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "c8212fce20c8029ad76d03435e6de64756a356cb",
+    "targetBranch": "main",
+    "outcome": "The communication contract is automatically checked at exact PR heads and exposed as a required validator gate and an adopter-facing command",
+    "nonGoals": [
+      "Modify Subactor runtime adapters in external repositories",
+      "Claim that repository CI itself grants runtime authority",
+      "Replace wellmanifest/new-project governance workflow",
+      "Add a runtime dependency"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 20,
+    "budgets": {
+      "maxImplementationFiles": 5,
+      "maxAffectedComponents": 2,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Run the published dependency-free self-test in a dedicated PR workflow, declare that exact check for protected validator consumption and document boundary adoption",
+      "components": [
+        {
+          "name": "communication-ci-gate",
+          "paths": [
+            ".github/workflows/communication-conformance.yml",
+            ".governance/required-checks.json"
+          ]
+        },
+        {
+          "name": "standard-release",
+          "paths": [
+            "README.md",
+            "CHANGELOG.md",
+            "VERSION"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Close the PR without merge; the existing 0.1.0 guide and published contracts remain available"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-05",
+        "commands": [
+          "python3 docs/communication/conformance.py self-test",
+          "python3 .governance/generate_required_checks.py .",
+          "./project/governance-check.sh --actor agent --base c8212fce20c8029ad76d03435e6de64756a356cb",
+          "git diff --check c8212fce20c8029ad76d03435e6de64756a356cb..HEAD"
+        ],
+        "evidence": "project/ticket-005/ai-codex-logs.txt"
+      }
+    ]
+  }
+}
