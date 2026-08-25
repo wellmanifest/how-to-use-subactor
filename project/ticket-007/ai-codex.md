@@ -29,6 +29,9 @@ the integration ticket that changed `docs/communication/**`.
   explicit admission failures rather than resource identity.
 - Published consistent `0.3.0` document metadata, `VERSION` and changelog while
   leaving the integrated schema/conformance implementation unchanged.
+- Verified that PR #11 exact head `5be0fed0fd4a` received protected Validator
+  Agent approval and merged as `a398f9db82c3`; recorded terminal state from
+  integrated `main` without changing the release content.
 
 ## Blockers
 

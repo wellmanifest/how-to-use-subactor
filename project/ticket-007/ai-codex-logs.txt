@@ -1,3 +1,5 @@
 2026-08-25T22:50:35+02:00 BASE: ticket-006 closure merged to main as 7a6d9dcaed5424727737c4ba8a737e3b1c8fc52c; release ticket starts from that exact integrated revision.
 2026-08-25T22:52:00+02:00 VALIDATION: conformance self-test valid=true with 4 schemas and 2 fixture sets; VERSION is 0.3.0; managed governance passed with 0 errors and 0 warnings.
 2026-08-25T22:52:15+02:00 PUBLICATION: documentation-only release is ready for exact-head CI and Validator Agent review; ticket remains IN_PROGRESS through protected merge.
+2026-08-25T22:55:45+02:00 MERGE: PR #11 exact head 5be0fed0fd4a9b36106ef0ddaf44dbd242688ae1 received Validator Agent approval and merged as a398f9db82c38ea8470362b4abd810cd43b95c20.
+2026-08-25T22:56:41+02:00 CLOSURE: ticket-007 marked DONE / DONE from integrated main in a governance-only successor.

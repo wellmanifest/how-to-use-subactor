@@ -1,5 +1,11 @@
 # Ticket Changelog (ticket-007)
 
+## [0.1.1] - 2026-08-25
+
+- Recorded exact-head Validator Agent approval and protected merge of PR #11.
+- Marked the integrated release ticket `DONE / DONE` without changing its
+  documentation or conformance implementation.
+
 ## [0.1.0] - 2026-08-25
 
 - Initial governance scaffold created.
