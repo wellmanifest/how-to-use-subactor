@@ -1,0 +1,98 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-003",
+  "summary": "Define enforceable Subactor communication contracts",
+  "workstream": "integration",
+  "classification": {
+    "kind": "FEATURE",
+    "priority": "P1",
+    "origin": "requested"
+  },
+  "allowedPaths": [
+    "docs/communication/**",
+    "TODO.md",
+    "project/TICKETS.md",
+    "project/ticket-003/**"
+  ],
+  "forbiddenPaths": ["project/ticket-*/user-*.md"],
+  "stacks": [],
+  "dependsOn": ["ticket-002"],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "e60d69c52fc84536e7fbaeefbd9e2acfb3195cb9",
+    "targetBranch": "main",
+    "outcome": "Agents, LLM supervisors and MCP clients can exchange Subactor work through a machine-checkable contract that rejects false identity, implicit authority, supervisor bypass, ungated queue execution and unsupported completion",
+    "nonGoals": [
+      "Change the Subactor runtime or the adopted wellmanifest/poa standard",
+      "Treat a JSON Schema or transport session as an authority grant",
+      "Standardize deployment-specific endpoint addresses",
+      "Allow supervisors to perform the target task through internal packages"
+    ],
+    "complexity": "M",
+    "estimatedMinutes": 30,
+    "budgets": {
+      "maxImplementationFiles": 9,
+      "maxAffectedComponents": 3,
+      "maxPublicInterfaceChanges": 2,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Publish three transport-neutral JSON contracts with one dependency-free semantic conformance runner and adversarial fixtures derived from the Gemini and Codex reports",
+      "components": [
+        {
+          "name": "communication-contracts",
+          "paths": [
+            "docs/communication/delegation-envelope.schema.v1.json",
+            "docs/communication/runtime-event.schema.v1.json",
+            "docs/communication/mcp-tool-contract.schema.v1.json"
+          ]
+        },
+        {
+          "name": "communication-conformance",
+          "paths": [
+            "docs/communication/conformance.py",
+            "docs/communication/fixtures/**"
+          ]
+        },
+        {
+          "name": "communication-specification",
+          "paths": [
+            "docs/communication/README.md"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [
+        "wellmanifest.subactor-communication/delegation-envelope/v1",
+        "wellmanifest.subactor-communication/runtime-event/v1"
+      ],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Close the PR without merge; no runtime adopts these contracts in this ticket"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-05",
+        "commands": [
+          "python3 docs/communication/conformance.py self-test"
+        ],
+        "evidence": "project/ticket-003/ai-codex-logs.txt"
+      },
+      {
+        "criterion": "AC-06",
+        "commands": [
+          "./project/governance-check.sh --actor agent --base e60d69c52fc84536e7fbaeefbd9e2acfb3195cb9",
+          "git diff --check e60d69c52fc84536e7fbaeefbd9e2acfb3195cb9..HEAD"
+        ],
+        "evidence": "project/ticket-003/ai-codex-logs.txt"
+      }
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+2026-08-25T00:00:00Z PLAN SESSION_EXECUTION_AUTHORIZATION recorded from the
+user request to update, investigate, standardize, validate and publish.
+Evidence inputs:
+- subactor/report/subactor-architecture-and-wellmanifest-analysis-2026-08-25.md
+- subactor/report/codex-gpt5-subactor-report-2026-08-25.md
+Plan state: no implementation files created before this plan-only commit.
