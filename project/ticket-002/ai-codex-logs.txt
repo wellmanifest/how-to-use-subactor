@@ -1,0 +1,16 @@
+$ internal knowledge review
+Reviewed architecture.system-overview/v1,
+architecture.autonomy-execution-pipeline/v2 and
+architecture.founder-llm-doql-conversation/v2. The older
+architecture.autonomy-definition/v1 was stale on 2026-08-25 and was not reused
+as an unqualified durable assumption.
+
+$ interface observation
+Verified current Subactor CLI command discovery and performed bounded read-only
+health/status observations. Transient ports and deployment state will not be
+encoded as durable constants in the guide.
+
+$ dependency boundary review
+Verified wellmanifest/llm, wellmanifest/poa and subactor/subllm source contracts.
+SubLLM selects and invokes a model/provider route; it is not an authority grant
+service and does not own Subactor mutations.
