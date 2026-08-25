@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wellmanifest.dev/schemas/subactor-communication/delegation-envelope.schema.v1.json",
+  "title": "Subactor delegation envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "messageId",
+    "sender",
+    "target",
+    "intent",
+    "authority",
+    "transport",
+    "orchestration",
+    "effects",
+    "evidence"
+  ],
+  "properties": {
+    "schema": {
+      "const": "wellmanifest.subactor-communication/delegation-envelope/v1"
+    },
+    "messageId": {"type": "string", "minLength": 1},
+    "sender": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "role"],
+      "properties": {
+        "kind": {"enum": ["human", "llm_agent", "mcp_client"]},
+        "role": {"enum": ["founder", "supervisor", "observer"]},
+        "actorRef": {"type": "string", "minLength": 1}
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["system", "class"],
+      "properties": {
+        "system": {"const": "subactor"},
+        "class": {"const": "autonomous_system"},
+        "controlRef": {"type": "string", "minLength": 1}
+      }
+    },
+    "intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outcome", "scope", "acceptance"],
+      "properties": {
+        "outcome": {"type": "string", "minLength": 1},
+        "scope": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "acceptance": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "limits": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "source"],
+      "properties": {
+        "mode": {"enum": ["observe", "plan", "dry_run", "apply"]},
+        "source": {"const": "subactor_control"},
+        "grantRef": {"type": "string", "minLength": 1},
+        "planHash": {"type": "string", "minLength": 1}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"mode": {"const": "apply"}}, "required": ["mode"]},
+          "then": {"required": ["grantRef", "planHash"]}
+        }
+      ]
+    },
+    "transport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "grantsAuthority"],
+      "properties": {
+        "kind": {"enum": ["cli", "rest", "web", "mcp", "artifact"]},
+        "grantsAuthority": {"const": false}
+      }
+    },
+    "orchestration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "executionOwner",
+        "delegationMode",
+        "supervisorMayBypass",
+        "subllm"
+      ],
+      "properties": {
+        "executionOwner": {"const": "subactor"},
+        "delegationMode": {"const": "outcome"},
+        "supervisorMayBypass": {"const": false},
+        "subllm": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["role", "grantsAuthority"],
+          "properties": {
+            "role": {"const": "internal_model_routing"},
+            "grantsAuthority": {"const": false}
+          }
+        }
+      }
+    },
+    "effects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["effect", "reversibility"],
+        "properties": {
+          "effect": {"type": "string", "minLength": 1},
+          "reversibility": {"enum": ["none", "reversible", "irreversible"]},
+          "rollbackRef": {"type": "string", "minLength": 1},
+          "compensationRef": {"type": "string", "minLength": 1},
+          "requiresHigherAuthority": {"type": "boolean"},
+          "higherAuthorityApprovalRef": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required"],
+      "properties": {
+        "required": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["ticket", "process_uri", "plan_hash", "events", "receipts", "readback", "eql"]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "schema": "wellmanifest.subactor-communication/conformance-fixture-suite/v1",
+  "cases": [
+    {
+      "id": "gemini-subagent-micromanagement",
+      "kind": "delegation",
+      "expectValid": false,
+      "expectedFindings": [
+        "COMM-IDENTITY-001",
+        "COMM-OWNERSHIP-001",
+        "COMM-AUTHORITY-001",
+        "COMM-AUTHORITY-002",
+        "COMM-EFFECT-002",
+        "COMM-EVIDENCE-001"
+      ],
+      "document": {
+        "schema": "wellmanifest.subactor-communication/delegation-envelope/v1",
+        "messageId": "bad-gemini-001",
+        "sender": {"kind": "llm_agent", "role": "supervisor"},
+        "target": {"system": "subactor", "class": "llm_agent"},
+        "intent": {
+          "outcome": "Implement my worker steps",
+          "scope": [],
+          "acceptance": []
+        },
+        "authority": {"mode": "apply", "source": "model_prompt"},
+        "transport": {"kind": "mcp", "grantsAuthority": true},
+        "orchestration": {
+          "executionOwner": "supervisor",
+          "delegationMode": "worker_prompts",
+          "supervisorMayBypass": true,
+          "subllm": {"role": "authority_issuer", "grantsAuthority": true}
+        },
+        "tasks": [
+          "spawn subactor_coder",
+          "tell the worker which files and package commands to use"
+        ],
+        "effects": [
+          {
+            "effect": "publish irreversible production change",
+            "reversibility": "irreversible",
+            "requiresHigherAuthority": false
+          }
+        ],
+        "evidence": {"required": ["chat_message"]}
+      }
+    },
+    {
+      "id": "codex-bypass-and-llm-completion",
+      "kind": "runtime",
+      "expectValid": false,
+      "expectedFindings": [
+        "POA-ADMISSION-001",
+        "POA-REPLAN-001",
+        "POA-COMPLETION-001"
+      ],
+      "document": {
+        "schema": "wellmanifest.subactor-communication/runtime-event/v1",
+        "eventId": "bad-codex-001",
+        "ticket": "PLF-016",
+        "correlationId": "corr-bypass",
+        "target": {"system": "subactor", "class": "autonomous_system"},
+        "state": "completed",
+        "queue": {
+          "revision": 1,
+          "previousRevision": 1,
+          "processUris": ["repo://subactor/connectors/private-package"]
+        },
+        "plan": {
+          "planHash": "sha256:unchanged",
+          "previousPlanHash": "sha256:unchanged",
+          "orchestratorRef": "actor://external-codex"
+        },
+        "admission": {
+          "decision": "REJECTED",
+          "validatorIndependent": false,
+          "findings": ["supervisor used repository package directly"]
+        },
+        "evidence": {
+          "source": "llm_claim",
+          "events": [],
+          "receipts": []
+        }
+      }
+    },
+    {
+      "id": "generic-authoritative-mcp-shell",
+      "kind": "mcp",
+      "expectValid": false,
+      "expectedFindings": [
+        "MCP-CAPABILITY-001",
+        "MCP-AUTHORITY-001",
+        "MCP-MUTATION-001"
+      ],
+      "document": {
+        "schema": "wellmanifest.subactor-communication/mcp-tool-contract/v1",
+        "name": "run_shell",
+        "target": {"system": "subactor", "class": "autonomous_system"},
+        "operationClass": "execute_contract",
+        "mutates": true,
+        "transportGrantsAuthority": true,
+        "authorityBoundary": "mcp_session",
+        "bindings": {
+          "ticket": false,
+          "planHash": false,
+          "grantRef": false,
+          "receipt": false
+        },
+        "inputSchema": {"type": "object"},
+        "outputSchema": {"type": "object"}
+      }
+    }
+  ]
+}

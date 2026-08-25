@@ -1,0 +1,148 @@
+{
+  "schema": "wellmanifest.subactor-communication/conformance-fixture-suite/v1",
+  "cases": [
+    {
+      "id": "outcome-delegation-over-mcp",
+      "kind": "delegation",
+      "expectValid": true,
+      "document": {
+        "schema": "wellmanifest.subactor-communication/delegation-envelope/v1",
+        "messageId": "msg-20260825-001",
+        "sender": {
+          "kind": "llm_agent",
+          "role": "supervisor",
+          "actorRef": "actor://supervisor/gemini"
+        },
+        "target": {
+          "system": "subactor",
+          "class": "autonomous_system",
+          "controlRef": "control://subactor/default"
+        },
+        "intent": {
+          "outcome": "Restore reliable inbound email ticket creation",
+          "scope": ["connector://subactor/inbound-email"],
+          "acceptance": [
+            "one test email creates exactly one correlated ticket",
+            "receipt and target readback agree"
+          ],
+          "limits": ["no DNS mutation", "do not disclose secrets"]
+        },
+        "authority": {
+          "mode": "dry_run",
+          "source": "subactor_control"
+        },
+        "transport": {
+          "kind": "mcp",
+          "grantsAuthority": false
+        },
+        "orchestration": {
+          "executionOwner": "subactor",
+          "delegationMode": "outcome",
+          "supervisorMayBypass": false,
+          "subllm": {
+            "role": "internal_model_routing",
+            "grantsAuthority": false
+          }
+        },
+        "effects": [
+          {
+            "effect": "create test ticket",
+            "reversibility": "reversible",
+            "rollbackRef": "process://subactor/ticket/delete-test"
+          }
+        ],
+        "evidence": {
+          "required": [
+            "ticket",
+            "process_uri",
+            "plan_hash",
+            "events",
+            "receipts",
+            "readback",
+            "eql"
+          ]
+        }
+      }
+    },
+    {
+      "id": "admitted-completion",
+      "kind": "runtime",
+      "expectValid": true,
+      "document": {
+        "schema": "wellmanifest.subactor-communication/runtime-event/v1",
+        "eventId": "evt-20260825-009",
+        "ticket": "PLF-016",
+        "correlationId": "corr-email-016",
+        "target": {"system": "subactor", "class": "autonomous_system"},
+        "state": "completed",
+        "queue": {
+          "revision": 3,
+          "previousRevision": 2,
+          "processUris": ["process://subactor/inbound-email/v3"]
+        },
+        "plan": {
+          "planHash": "sha256:admitted-plan",
+          "previousPlanHash": "sha256:rejected-plan",
+          "orchestratorRef": "actor://subactor/orchestrator"
+        },
+        "admission": {
+          "decision": "ADMITTED",
+          "validatorIndependent": true,
+          "validatorRef": "actor://subactor/validator-agent",
+          "receiptRef": "receipt://subactor/admission/PLF-016/3",
+          "boundTicket": "PLF-016",
+          "boundQueueRevision": 3,
+          "boundPlanHash": "sha256:admitted-plan",
+          "findings": []
+        },
+        "authority": {
+          "grantRef": "grant://subactor/PLF-016/apply"
+        },
+        "evidence": {
+          "source": "readback",
+          "events": ["event://subactor/PLF-016/completed"],
+          "receipts": ["receipt://subactor/PLF-016/apply"],
+          "readback": {
+            "ref": "readback://mail-system/corr-email-016",
+            "passed": true,
+            "method": "independent_query"
+          }
+        }
+      }
+    },
+    {
+      "id": "bounded-mcp-observation",
+      "kind": "mcp",
+      "expectValid": true,
+      "document": {
+        "schema": "wellmanifest.subactor-communication/mcp-tool-contract/v1",
+        "name": "subactor_observe_ticket",
+        "target": {"system": "subactor", "class": "autonomous_system"},
+        "operationClass": "observe_state",
+        "mutates": false,
+        "transportGrantsAuthority": false,
+        "authorityBoundary": "subactor_control",
+        "bindings": {
+          "ticket": true,
+          "planHash": false,
+          "grantRef": false,
+          "receipt": true
+        },
+        "inputSchema": {
+          "type": "object",
+          "required": ["ticket"],
+          "properties": {"ticket": {"type": "string"}}
+        },
+        "outputSchema": {
+          "type": "object",
+          "required": ["state", "events"],
+          "properties": {
+            "state": {"type": "string"},
+            "events": {"type": "array"}
+          }
+        },
+        "description": "Observe one ticket through Subactor Control"
+      }
+    }
+  ]
+}
