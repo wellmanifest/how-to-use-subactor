@@ -10,24 +10,33 @@
         "DIRECT_PR_SCAN_CONFIG[\"wellmanifest/new-project\"].required_checks",
         "bin/dispatch-direct-pr.sh resolve_required_checks"
       ],
-      "mustRead": "governance/required-checks.json#/requiredCheckNames",
+      "mustRead": ".governance/required-checks.json#/requiredChecks",
       "name": "validator-agent",
-      "note": "External consumers must load requiredCheckNames from this file (or an equivalent generated export). Hardcoding a subset is a governance defect of the same class as ticket-025.",
+      "note": "External consumers must load requiredChecks[*].name from this file (or an equivalent generated export). Hardcoding a subset is a governance defect of the same class as ticket-025.",
       "repository": "subactor/validator-agent"
     },
     {
       "id": "main-governance-protection",
-      "mustMatch": "requiredCheckNames",
+      "mustMatch": "requiredChecks[*].name",
       "name": "github-ruleset",
-      "note": "Ruleset lives outside the repository and cannot be read from CI without admin API. Align it manually with requiredCheckNames; CI gates the workflow side only."
+      "note": "Ruleset lives outside the repository and cannot be read from CI without admin API. Align it with requiredChecks[*].name; validator-agent gates the protected publication process."
     }
   ],
   "repository": "wellmanifest/how-to-use-subactor",
-  "requiredCheckNames": [
-    "governance / enforce",
-    "governance / remote lifecycle"
+  "requiredChecks": [
+    {
+      "name": "communication / conformance",
+      "workflowFile": ".github/workflows/communication-conformance.yml"
+    },
+    {
+      "name": "governance / enforce",
+      "workflowFile": ".github/workflows/new-project-governance.yml"
+    },
+    {
+      "name": "governance / remote lifecycle",
+      "workflowFile": ".github/workflows/new-project-governance.yml"
+    }
   ],
   "schema": "new-project.required-checks/v1",
-  "version": 1,
-  "workflowFile": ".github/workflows/new-project-governance.yml"
+  "version": 1
 }
