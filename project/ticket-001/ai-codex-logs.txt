@@ -1,0 +1,15 @@
+$ goal governance adopt --standard-repository ../new-project --source-revision 01397097ac53a01b2dd544f0b5908d22d1b526d5 --target-root .
+adopted wellmanifest/new-project 0.18.6 at 01397097ac53a01b2dd544f0b5908d22d1b526d5
+MISSING target prerequisite CHANGELOG.md
+MISSING target prerequisite TODO.md
+MISSING target prerequisite VERSION
+MISSING target prerequisite project/TICKETS.md
+
+$ scripts/install-agent-hosts.sh
+Activated host contract and core.hooksPath=.githooks in .
+
+$ ./project/governance-check.sh --actor agent [with explicit initial-adoption changed paths and base 0f7ddccc291d831199a824835ab70973c9df4271]
+GOV-PASS: passed (0 errors, 0 warnings)
+
+$ git diff --check
+[no output; exit 0]
