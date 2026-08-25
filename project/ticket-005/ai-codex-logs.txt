@@ -16,3 +16,9 @@ Plan state: no implementation files changed before this plan-only commit.
 - project/readme.sh
   => project/TICKETS.md includes ticket-005
 - all acceptance criteria satisfied; workflow moved to PUBLICATION
+2026-08-25T11:44:41Z CLOSURE
+- communication / conformance: PASS at exact PR head
+- PR wellmanifest/how-to-use-subactor#7 approved at exact head
+  b82ce6255d8c5e1222b2bb49be57def54d39f95f
+- merged as e7c1fcea47b137090bd94445f32393cafa9c3e34
+- remote ticket branch deleted

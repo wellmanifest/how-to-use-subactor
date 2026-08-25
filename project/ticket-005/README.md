@@ -2,8 +2,8 @@
 
 - **ID**: ticket-005
 - **Owner**: unresolved:human
-- **Status**: IN_PROGRESS
-- **Workflow state**: PUBLICATION
+- **Status**: DONE
+- **Workflow state**: DONE
 - **Created**: 2026-08-25
 
 ## Goal and scope
@@ -30,3 +30,12 @@ release the machine-checkable contract as version 0.2.0.
 - Human participant: session requester (authority recorded in agent evidence;
   no synthetic human-owned file was created).
 - Agent participant: [ai-codex.md](ai-codex.md)
+
+## Closure receipt
+
+- Pull request: `wellmanifest/how-to-use-subactor#7`
+- Validated head: `b82ce6255d8c5e1222b2bb49be57def54d39f95f`
+- Integrated main: `e7c1fcea47b137090bd94445f32393cafa9c3e34`
+- Merged at: `2026-08-25T11:44:41Z`
+- Result: communication, governance and lifecycle checks passed; independently
+  approved and merged; remote head branch deleted.
