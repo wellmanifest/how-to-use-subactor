@@ -2,8 +2,8 @@
 
 - **ID**: ticket-003
 - **Owner**: unresolved:human
-- **Status**: IN_PROGRESS
-- **Workflow state**: PUBLICATION
+- **Status**: DONE
+- **Workflow state**: DONE
 - **Created**: 2026-08-25
 
 ## Goal and scope
@@ -34,3 +34,11 @@ ungated POA execution and completion asserted without receipts/readback.
 - Human participant: session requester (authority recorded in agent evidence;
   no synthetic human-owned file was created).
 - Agent participant: [ai-codex.md](ai-codex.md)
+
+## Closure receipt
+
+- Pull request: `wellmanifest/how-to-use-subactor#5`
+- Validated head: `082c671c3aa3de538da39960ec012b916ab94f97`
+- Integrated main: `26dba6dd2a455b8508fff1829659d4c7acf2d646`
+- Merged at: `2026-08-25T11:34:54Z`
+- Result: independently approved, merged and head branch deleted.

@@ -7,3 +7,4 @@
 - Planned typed communication, runtime-admission and MCP capability contracts
   with dependency-free adversarial conformance tests.
 - Added seven normative/conformance files under `docs/communication`.
+- Closed after exact-head validator approval and merge of PR #5.
