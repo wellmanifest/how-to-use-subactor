@@ -2,7 +2,7 @@
 {
   "schema": "wellmanifest.guide/v1",
   "id": "how-to-use-subactor",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "status": "current",
   "updated": "2026-08-25",
   "home": "wellmanifest",
@@ -139,9 +139,10 @@ Opis powyżej ma normatywne odpowiedniki w
 [`docs/communication`](docs/communication/README.md): envelope delegacji,
 zdarzenie runtime POA i kontrakt narzędzia MCP. Adapter agenta/LLM MUSI
 zwalidować envelope na wejściu do Control; orchestrator MUSI zwalidować
-zdarzenie admission przed uruchomieniem kolejki; adapter MCP MUSI walidować
-katalog narzędzi przed jego udostępnieniem modelowi. Projekcja webowa i CLI
-zachowują ten sam kontrakt semantyczny.
+zdarzenie admission v2 przed uruchomieniem kolejki, łącznie z dokładnym
+powiązaniem aktora, operacji, URI procesu, zarejestrowanych URI zasobów i
+grantu; adapter MCP MUSI walidować katalog narzędzi przed jego udostępnieniem
+modelowi. Projekcja webowa i CLI zachowują ten sam kontrakt semantyczny.
 
 ```bash
 python3 docs/communication/conformance.py self-test
@@ -416,9 +417,16 @@ domyślne prawo do zastępowania runtime.
 Zadanie jest zakończone tylko wtedy, gdy istnieje spójny łańcuch:
 
 ```text
-cel -> ticket/korelacja -> proces/URI -> plan_hash -> grant/lease
+cel -> ticket/korelacja -> proces/URI -> aktor/operacja -> URI zasobów
+    -> plan_hash -> grant związany z dokładnie tym aktorem/procesem/zasobami
     -> events/logs -> receipt -> readback/EQL -> kryteria akceptacji
 ```
+
+Przed admission bramka MUSI odrzucić proces, który używa ogólnej etykiety
+providera, szerokiego wyszukiwania sekretu albo samej nazwy celu zamiast
+zarejestrowanych URI źródła i odbiorcy. Dla mutacji zbiór URI w grancie MUSI
+być identyczny ze zbiorem URI procesu; brak lub nadmiar zasobu oznacza replan w
+tym samym tickecie, nigdy domyślną zgodę.
 
 Raport końcowy MUSI zawierać:
 

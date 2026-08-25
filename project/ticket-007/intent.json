@@ -1,0 +1,89 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-007",
+  "summary": "Publish exact POA resource binding guide release",
+  "workstream": "governance",
+  "classification": {
+    "kind": "FEATURE",
+    "priority": "P1",
+    "origin": "requested"
+  },
+  "allowedPaths": [
+    "README.md",
+    "VERSION",
+    "CHANGELOG.md",
+    "project/ticket-007/**",
+    "TODO.md",
+    "project/TICKETS.md"
+  ],
+  "forbiddenPaths": ["project/ticket-*/user-*.md"],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "7a6d9dcaed5424727737c4ba8a737e3b1c8fc52c",
+    "targetBranch": "main",
+    "outcome": "Adopters see runtime-event v2 exact resource and grant admission requirements in the normative root guide and release 0.3.0 metadata",
+    "nonGoals": [
+      "Change runtime-event v2 schema or conformance code",
+      "Change Subactor runtime",
+      "Claim that a registry reference or URI grants authority",
+      "Remove runtime-event v1 compatibility"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 15,
+    "budgets": {
+      "maxImplementationFiles": 3,
+      "maxAffectedComponents": 1,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Publish a documentation-only 0.3.0 release that points adopters to the integrated additive runtime-event v2 contract",
+      "components": [
+        {
+          "name": "standard-release",
+          "paths": ["README.md", "VERSION", "CHANGELOG.md"]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Close the PR without merge; release 0.2.0 remains current while v2 stays available under docs/communication"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": ["python3 docs/communication/conformance.py self-test"],
+        "evidence": "README.md"
+      },
+      {
+        "criterion": "AC-02",
+        "commands": ["python3 docs/communication/conformance.py self-test"],
+        "evidence": "README.md"
+      },
+      {
+        "criterion": "AC-03",
+        "commands": ["test \"$(cat VERSION)\" = \"0.3.0\""],
+        "evidence": "VERSION and CHANGELOG.md"
+      },
+      {
+        "criterion": "AC-04",
+        "commands": [
+          "python3 docs/communication/conformance.py self-test",
+          "./project/governance-check.sh --actor agent --base 7a6d9dcaed5424727737c4ba8a737e3b1c8fc52c",
+          "git diff --check 7a6d9dcaed5424727737c4ba8a737e3b1c8fc52c..HEAD"
+        ],
+        "evidence": "project/ticket-007/ai-codex-logs.txt"
+      }
+    ]
+  }
+}

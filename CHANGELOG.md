@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 - 2026-08-25
+
+- Added additive POA runtime-event v2 with exact process, actor, operation and
+  registered resource URI bindings.
+- Required every mutation grant and admission receipt to match the planned
+  process/resource sets exactly before execution.
+- Added stable resource/grant findings and an adversarial generic credential-
+  harvest fixture while preserving runtime-event v1 compatibility.
+
 ## 0.2.0 - 2026-08-25
 
 - Added typed delegation, POA runtime-event and MCP tool contracts.
