@@ -2,8 +2,8 @@
 
 - **ID**: ticket-006
 - **Owner**: agent:codex
-- **Status**: IN_PROGRESS
-- **Workflow state**: PUBLICATION
+- **Status**: DONE
+- **Workflow state**: DONE
 - **Created**: 2026-08-25
 
 ## Goal and scope
@@ -31,3 +31,12 @@ and destination resources required by the runtime grant contract.
 - Human participant: session requester (authority recorded in agent evidence;
   no synthetic human-owned file was created).
 - Agent participant: [ai-codex.md](ai-codex.md)
+
+## Closure receipt
+
+- Pull request: `wellmanifest/how-to-use-subactor#9`
+- Validated head: `8ae02cbc85b007c4936e954aa4e1f9fa954d4fed`
+- Integrated main: `fe130a98eb14b416e20b314832aa06e1e3194fbf`
+- Merged at: `2026-08-25T20:47:21Z`
+- Result: exact-head Validator Agent approval, protected merge and deleted head
+  branch; this closure changes governance evidence only.
