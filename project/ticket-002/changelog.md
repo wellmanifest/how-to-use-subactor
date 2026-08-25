@@ -11,3 +11,5 @@
 - Verified current CLI-discovered REST examples and exact source commit links.
 - Recorded a green governance and whitespace validation and moved the ticket to
   publication while keeping it `IN_PROGRESS` until trusted merge.
+- Recorded exact-head Validator App approval and trusted merge, then closed the
+  ticket from integrated `main` as a governance-only transaction.

@@ -2,8 +2,8 @@
 
 - **ID**: ticket-002
 - **Owner**: agent:codex under SESSION_EXECUTION_AUTHORIZATION
-- **Status**: IN_PROGRESS
-- **Workflow state**: PUBLICATION
+- **Status**: DONE
+- **Workflow state**: DONE
 - **Created**: 2026-08-25
 
 ## Goal and scope
@@ -33,3 +33,11 @@ LLM, chat agent or a collection of manually orchestrated workers.
 - Human participant: authorization and requirements were supplied in the active
   conversation; no `user-*` file was created or modified.
 - Agent participant: [ai-codex.md](ai-codex.md)
+
+## Publication evidence
+
+- Pull request: <https://github.com/wellmanifest/how-to-use-subactor/pull/3>
+- Validated head: `ec50af6983f2a8d114b42b9af28546b723f778b6`
+- Independent approval: `ifuri-validator-agent[bot]`, decision `APPROVE`
+- Integrated commit: `1330991dba77d461f81a9ccb4fb3fd4a61c04cab`
+- Merged: 2026-08-25 10:58:33 UTC
