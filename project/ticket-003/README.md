@@ -3,7 +3,7 @@
 - **ID**: ticket-003
 - **Owner**: unresolved:human
 - **Status**: IN_PROGRESS
-- **Workflow state**: VALIDATION
+- **Workflow state**: PUBLICATION
 - **Created**: 2026-08-25
 
 ## Goal and scope
@@ -27,7 +27,7 @@ ungated POA execution and completion asserted without receipts/readback.
   generic shell, URI or connector call into implicit execution authority.
 - [x] AC-05: A dependency-free conformance runner accepts valid fixtures and
   rejects adversarial Gemini/Codex-style fixtures with stable finding codes.
-- [ ] AC-06: The managed governance gate and diff checks pass.
+- [x] AC-06: The managed governance gate and diff checks pass.
 
 ## Participants
 

@@ -8,7 +8,7 @@
   `governance`.
 - [ ] [`ticket-003`](project/ticket-003/README.md) — define machine-checkable
   Subactor communication, runtime admission and MCP contracts. Status:
-  `IN_PROGRESS / EDIT`; workstream: `integration`.
+  `IN_PROGRESS / PUBLICATION`; workstream: `integration`.
 
 <!-- TICKETS:START -->
 <!-- TICKETS:END -->

@@ -14,3 +14,7 @@ Plan state: no implementation files created before this plan-only commit.
 - ./project/governance-check.sh --actor agent --base
   e60d69c52fc84536e7fbaeefbd9e2acfb3195cb9
   => GOV-PASS: passed (0 errors, 0 warnings)
+2026-08-25T00:02:00Z VALIDATION
+- project/readme.sh
+  => project/TICKETS.md includes ticket-003
+- all ticket acceptance criteria satisfied; workflow moved to PUBLICATION
