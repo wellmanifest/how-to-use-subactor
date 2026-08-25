@@ -1,5 +1,11 @@
 # Ticket Changelog (ticket-006)
 
+## [0.1.1] - 2026-08-25
+
+- Recorded exact-head Validator Agent approval and protected merge of PR #9.
+- Marked the integrated contract ticket `DONE / DONE` without changing its
+  implementation.
+
 ## [0.1.0] - 2026-08-25
 
 - Initial governance scaffold created.

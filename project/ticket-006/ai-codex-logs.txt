@@ -5,3 +5,5 @@
 2026-08-25T22:40:00+02:00 GOVERNANCE: initial gate correctly rejected root README/CHANGELOG release paths as governance-owned; narrowed the integration ticket instead of bypassing workstream ownership.
 2026-08-25T22:41:00+02:00 VALIDATION: managed governance passed with 0 errors and 0 warnings against accepted base 939950c967961ca694ac932907b79c384cd2dee5.
 2026-08-25T22:42:00+02:00 PUBLICATION: integration contract is ready for exact-head CI and Validator Agent review; ticket remains IN_PROGRESS until protected merge and a separate governance-only closure.
+2026-08-25T22:47:21+02:00 MERGE: PR #9 exact head 8ae02cbc85b007c4936e954aa4e1f9fa954d4fed received Validator Agent approval and merged as fe130a98eb14b416e20b314832aa06e1e3194fbf; remote head branch was deleted.
+2026-08-25T22:48:00+02:00 CLOSURE: ticket-006 marked DONE / DONE from integrated main in a governance-only successor.

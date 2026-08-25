@@ -38,6 +38,9 @@ that this omission can admit a semantically unexecutable process shape.
   harvest fixture derived from the live fail-closed correction.
 - Kept root guide/release changes outside this integration ticket after the
   governance gate identified their separate governance ownership.
+- Verified that PR #9 exact head `8ae02cbc85b0` received protected Validator
+  Agent approval and merged as `fe130a98eb14`; recorded terminal state from
+  integrated `main` without changing the contract implementation.
 
 ## Blockers
 
