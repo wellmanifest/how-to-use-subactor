@@ -1,5 +1,8 @@
 # TODO
 
+- [ ] [`ticket-007`](project/ticket-007/README.md) — publish the exact POA
+  resource-binding guide release. Status: `IN_PROGRESS / EDIT`; workstream:
+  `governance`.
 - [x] [`ticket-006`](project/ticket-006/README.md) — require exact registered
   POA resource and grant bindings before runtime admission. Status:
   `DONE / DONE`; workstream: `integration`.
