@@ -6,3 +6,4 @@
 - No human participant identity or content was generated.
 - Planned typed communication, runtime-admission and MCP capability contracts
   with dependency-free adversarial conformance tests.
+- Added seven normative/conformance files under `docs/communication`.

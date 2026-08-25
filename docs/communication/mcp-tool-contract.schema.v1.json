@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wellmanifest.dev/schemas/subactor-communication/mcp-tool-contract.schema.v1.json",
+  "title": "Subactor MCP tool contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "name",
+    "target",
+    "operationClass",
+    "mutates",
+    "transportGrantsAuthority",
+    "authorityBoundary",
+    "bindings",
+    "inputSchema",
+    "outputSchema"
+  ],
+  "properties": {
+    "schema": {
+      "const": "wellmanifest.subactor-communication/mcp-tool-contract/v1"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "enum": ["run_shell", "shell", "run_uri", "call_connector", "execute_any", "invoke"]
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["system", "class"],
+      "properties": {
+        "system": {"const": "subactor"},
+        "class": {"const": "autonomous_system"}
+      }
+    },
+    "operationClass": {
+      "enum": [
+        "observe_state",
+        "delegate_outcome",
+        "inspect_plan",
+        "approve_plan",
+        "execute_contract",
+        "read_receipt"
+      ]
+    },
+    "mutates": {"type": "boolean"},
+    "transportGrantsAuthority": {"const": false},
+    "authorityBoundary": {"const": "subactor_control"},
+    "bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ticket", "planHash", "grantRef"],
+      "properties": {
+        "ticket": {"type": "boolean"},
+        "planHash": {"type": "boolean"},
+        "grantRef": {"type": "boolean"},
+        "receipt": {"type": "boolean"}
+      }
+    },
+    "inputSchema": {"type": "object"},
+    "outputSchema": {"type": "object"},
+    "description": {"type": "string", "minLength": 1}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"mutates": {"const": true}}, "required": ["mutates"]},
+      "then": {
+        "properties": {
+          "bindings": {
+            "properties": {
+              "ticket": {"const": true},
+              "planHash": {"const": true},
+              "grantRef": {"const": true}
+            }
+          }
+        }
+      }
+    }
+  ]
+}

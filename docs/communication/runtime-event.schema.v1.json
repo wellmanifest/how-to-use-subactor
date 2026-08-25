@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wellmanifest.dev/schemas/subactor-communication/runtime-event.schema.v1.json",
+  "title": "Subactor POA runtime event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "eventId",
+    "ticket",
+    "correlationId",
+    "target",
+    "state",
+    "queue",
+    "plan",
+    "admission",
+    "evidence"
+  ],
+  "properties": {
+    "schema": {
+      "const": "wellmanifest.subactor-communication/runtime-event/v1"
+    },
+    "eventId": {"type": "string", "minLength": 1},
+    "ticket": {"type": "string", "minLength": 1},
+    "correlationId": {"type": "string", "minLength": 1},
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["system", "class"],
+      "properties": {
+        "system": {"const": "subactor"},
+        "class": {"const": "autonomous_system"}
+      }
+    },
+    "state": {
+      "enum": [
+        "planned",
+        "validating",
+        "admitted",
+        "replan_required",
+        "running",
+        "waiting_authority",
+        "blocked",
+        "completed",
+        "failed"
+      ]
+    },
+    "queue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["revision", "processUris"],
+      "properties": {
+        "revision": {"type": "integer", "minimum": 1},
+        "previousRevision": {"type": "integer", "minimum": 1},
+        "processUris": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["planHash", "orchestratorRef"],
+      "properties": {
+        "planHash": {"type": "string", "minLength": 1},
+        "previousPlanHash": {"type": "string", "minLength": 1},
+        "orchestratorRef": {"type": "string", "minLength": 1}
+      }
+    },
+    "admission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "validatorIndependent"],
+      "properties": {
+        "decision": {"enum": ["PENDING", "ADMITTED", "REJECTED"]},
+        "validatorIndependent": {"type": "boolean"},
+        "validatorRef": {"type": "string", "minLength": 1},
+        "receiptRef": {"type": "string", "minLength": 1},
+        "boundTicket": {"type": "string", "minLength": 1},
+        "boundQueueRevision": {"type": "integer", "minimum": 1},
+        "boundPlanHash": {"type": "string", "minLength": 1},
+        "findings": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "grantRef": {"type": "string", "minLength": 1},
+        "higherAuthorityApprovalRef": {"type": "string", "minLength": 1}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source"],
+      "properties": {
+        "source": {"enum": ["runtime", "control", "validator", "readback"]},
+        "events": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "receipts": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "readback": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["ref", "passed", "method"],
+          "properties": {
+            "ref": {"type": "string", "minLength": 1},
+            "passed": {"const": true},
+            "method": {"enum": ["independent_query", "eql", "target_system_receipt"]}
+          }
+        }
+      }
+    }
+  }
+}

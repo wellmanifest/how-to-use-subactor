@@ -3,7 +3,7 @@
 - **ID**: ticket-003
 - **Owner**: unresolved:human
 - **Status**: IN_PROGRESS
-- **Workflow state**: EDIT
+- **Workflow state**: VALIDATION
 - **Created**: 2026-08-25
 
 ## Goal and scope
@@ -16,16 +16,16 @@ ungated POA execution and completion asserted without receipts/readback.
 
 ## Acceptance criteria
 
-- [ ] AC-01: A typed delegation envelope identifies Subactor as the autonomous
+- [x] AC-01: A typed delegation envelope identifies Subactor as the autonomous
   execution owner and separates outcome, authority, transport and evidence.
-- [ ] AC-02: Runtime events bind ticket, correlation, queue revision and plan
+- [x] AC-02: Runtime events bind ticket, correlation, queue revision and plan
   hash; execution requires an independent admission receipt, while rejection
   requires a revised plan in the same ticket.
-- [ ] AC-03: Irreversible effects require a higher-authority approval reference;
+- [x] AC-03: Irreversible effects require a higher-authority approval reference;
   reversible effects declare rollback or compensation.
-- [ ] AC-04: MCP tools expose bounded semantic operations and cannot turn a
+- [x] AC-04: MCP tools expose bounded semantic operations and cannot turn a
   generic shell, URI or connector call into implicit execution authority.
-- [ ] AC-05: A dependency-free conformance runner accepts valid fixtures and
+- [x] AC-05: A dependency-free conformance runner accepts valid fixtures and
   rejects adversarial Gemini/Codex-style fixtures with stable finding codes.
 - [ ] AC-06: The managed governance gate and diff checks pass.
 

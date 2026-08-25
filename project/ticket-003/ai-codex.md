@@ -26,6 +26,14 @@ negative conformance cases that represent both reported failures.
 
 - Initialized the bounded ticket and recorded SESSION_EXECUTION_AUTHORIZATION
   from the request to execute this work.
+- Added typed delegation, POA runtime-event and MCP tool contracts.
+- Made queue admission bind the ticket, queue revision and plan hash to an
+  independent receipt; made rejection require a new revision in the same
+  ticket.
+- Added explicit rollback/compensation and irreversible higher-authority
+  invariants.
+- Added deterministic semantic findings and positive/adversarial self-tests
+  covering both report failure models.
 
 ## Blockers
 
