@@ -23,6 +23,12 @@ the integration ticket that changed `docs/communication/**`.
 
 - Initialized the bounded ticket and recorded SESSION_EXECUTION_AUTHORIZATION
   from the request to execute this work.
+- Updated the normative root guide with runtime-event v2 exact actor, process,
+  operation, registered resource and set-equal mutation grant requirements.
+- Made generic provider labels, broad secret searches and destination names
+  explicit admission failures rather than resource identity.
+- Published consistent `0.3.0` document metadata, `VERSION` and changelog while
+  leaving the integrated schema/conformance implementation unchanged.
 
 ## Blockers
 
