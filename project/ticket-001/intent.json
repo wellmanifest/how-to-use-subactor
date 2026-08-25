@@ -1,0 +1,106 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-001",
+  "summary": "Adopt immutable repository governance",
+  "workstream": "governance",
+  "classification": {
+    "kind": "SERVICE",
+    "priority": "P1",
+    "origin": "requested"
+  },
+  "allowedPaths": [
+    ".aider.conf.yml",
+    ".cursor/**",
+    ".githooks/**",
+    ".github/**",
+    ".governance/**",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "GEMINI.md",
+    "CHANGELOG.md",
+    "TODO.md",
+    "VERSION",
+    "project/**",
+    "scripts/**",
+    "worktree-guard.yaml"
+  ],
+  "forbiddenPaths": [
+    "README.md",
+    "project/ticket-*/user-*.md"
+  ],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "subactor",
+    "adopt": ["wellmanifest/new-project"]
+  },
+  "delivery": {
+    "acceptedBaseSha": "0f7ddccc291d831199a824835ab70973c9df4271",
+    "targetBranch": "main",
+    "outcome": "The repository has immutable published governance, host-agnostic agent instructions and an exact managed workflow before guide implementation begins",
+    "nonGoals": [
+      "Write the public Subactor guide in this bootstrap ticket",
+      "Change Subactor runtime, SubLLM or any Wellmanifest source standard",
+      "Treat session prose as trusted merge approval"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 20,
+    "standardAdoption": {
+      "sourceRepository": "wellmanifest/new-project",
+      "fromRevision": null,
+      "toRevision": "01397097ac53a01b2dd544f0b5908d22d1b526d5"
+    },
+    "budgets": {
+      "maxImplementationFiles": 5,
+      "maxAffectedComponents": 2,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Adopt the immutable package through Goal, extend only repository-local workstream and required-check configuration, and defer public guide content",
+      "components": [
+        {
+          "name": "governance-package",
+          "paths": [
+            ".aider.conf.yml",
+            ".cursor/**",
+            ".githooks/**",
+            ".github/**",
+            ".governance/**",
+            "AGENTS.md",
+            "CLAUDE.md",
+            "GEMINI.md",
+            "project/**",
+            "scripts/**",
+            "worktree-guard.yaml"
+          ]
+        },
+        {
+          "name": "repository-carriers",
+          "paths": ["CHANGELOG.md", "TODO.md", "VERSION"]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {"impact": "none", "states": [], "evidence": []},
+      "rollback": "Close the PR without merge and preserve the branch"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-05",
+        "commands": [
+          "./project/governance-check.sh --actor agent",
+          "git diff --check"
+        ],
+        "evidence": "project/ticket-001/ai-codex-logs.txt"
+      }
+    ]
+  }
+}
