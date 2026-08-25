@@ -3,7 +3,7 @@
 - **ID**: ticket-001
 - **Owner**: agent:codex under SESSION_EXECUTION_AUTHORIZATION
 - **Status**: IN_PROGRESS
-- **Workflow state**: EDIT
+- **Workflow state**: PUBLICATION
 - **Created**: 2026-08-25
 
 ## Goal and scope
@@ -15,11 +15,11 @@ public Subactor usage guide is written in a separate dependent ticket.
 
 ## Acceptance criteria
 
-- [ ] AC-01: The adoption lock binds published v0.18.6 and exact source SHA.
-- [ ] AC-02: Managed file digests match the adoption lock.
-- [ ] AC-03: Host instructions and the local pre-commit hook are installed.
-- [ ] AC-04: Required checks match actual job names in the managed workflow.
-- [ ] AC-05: Governance and whitespace checks pass.
+- [x] AC-01: The adoption lock binds published v0.18.6 and exact source SHA.
+- [x] AC-02: Managed file digests match the adoption lock.
+- [x] AC-03: Host instructions and the local pre-commit hook are installed.
+- [x] AC-04: Required checks match actual job names in the managed workflow.
+- [x] AC-05: Governance and whitespace checks pass.
 
 ## Participants
 
