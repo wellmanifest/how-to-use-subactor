@@ -3,7 +3,7 @@
 - **ID**: ticket-002
 - **Owner**: agent:codex under SESSION_EXECUTION_AUTHORIZATION
 - **Status**: IN_PROGRESS
-- **Workflow state**: EDIT
+- **Workflow state**: PUBLICATION
 - **Created**: 2026-08-25
 
 ## Goal and scope
@@ -15,17 +15,17 @@ LLM, chat agent or a collection of manually orchestrated workers.
 
 ## Acceptance criteria
 
-- [ ] AC-01: The guide defines Subactor as an autonomous system and separates
+- [x] AC-01: The guide defines Subactor as an autonomous system and separates
   its responsibility from the human, supervisor LLM, SubLLM and capabilities.
-- [ ] AC-02: The guide provides one communication contract and interface order
+- [x] AC-02: The guide provides one communication contract and interface order
   for CLI/shell, REST API, web UI, MCP and immutable artifacts.
-- [ ] AC-03: Authority, plan, dry-run, apply, receipt and EQL/readback boundaries
+- [x] AC-03: Authority, plan, dry-run, apply, receipt and EQL/readback boundaries
   are explicit, including that SubLLM routes models but grants no authority.
-- [ ] AC-04: A supervisor loop covers delegation, observation, diagnosis,
+- [x] AC-04: A supervisor loop covers delegation, observation, diagnosis,
   bounded repair of autonomy defects and replay through Subactor.
-- [ ] AC-05: Gemini/Antigravity micromanagement and Codex direct-bypass failures
+- [x] AC-05: Gemini/Antigravity micromanagement and Codex direct-bypass failures
   are documented with corrected supervisor prompts and behavior.
-- [ ] AC-06: Repository version and changelog identify the first public guide,
+- [x] AC-06: Repository version and changelog identify the first public guide,
   and governance plus whitespace validation pass.
 
 ## Participants

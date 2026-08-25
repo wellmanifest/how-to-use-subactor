@@ -29,7 +29,13 @@ evidence demonstrates a systemic defect.
 
 - Initialized the bounded ticket and recorded SESSION_EXECUTION_AUTHORIZATION
   from the request to execute this work.
-- No implementation changes have been made in this plan-only commit.
+- Published one transport-independent communication envelope and the semantic
+  interface preference MCP → HTTPS → CLI → immutable artifacts.
+- Distinguished Subactor authority and AQL/grants from SubLLM model routing.
+- Added the supervisor observation/repair/replay loop and explicit end-to-end
+  evidence criteria.
+- Added corrected Gemini/Antigravity and Codex examples without changing any
+  Subactor runtime repository.
 
 ## Blockers
 
