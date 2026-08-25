@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0 - 2026-08-25
+
+- Added typed delegation, POA runtime-event and MCP tool contracts.
+- Added stable semantic findings for false identity, supervisor bypass,
+  implicit authority, missing rollback/higher approval, ungated execution and
+  unsupported completion.
+- Added positive and adversarial Gemini/Codex report fixtures.
+- Made communication conformance an exact-head required publication check.
+
 ## 0.1.0 - 2026-08-25
 
 - Adopted immutable `wellmanifest/new-project` governance for the repository.

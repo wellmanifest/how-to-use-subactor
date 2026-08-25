@@ -3,7 +3,7 @@
 - **ID**: ticket-005
 - **Owner**: unresolved:human
 - **Status**: IN_PROGRESS
-- **Workflow state**: EDIT
+- **Workflow state**: VALIDATION
 - **Created**: 2026-08-25
 
 ## Goal and scope
@@ -14,14 +14,14 @@ release the machine-checkable contract as version 0.2.0.
 
 ## Acceptance criteria
 
-- [ ] AC-01: Every pull request runs the dependency-free communication
+- [x] AC-01: Every pull request runs the dependency-free communication
   conformance self-test on the exact revision under review.
-- [ ] AC-02: The repository required-check declaration includes
+- [x] AC-02: The repository required-check declaration includes
   `communication / conformance`, allowing validator-agent to fail closed.
-- [ ] AC-03: The public guide links all machine contracts, explains adapter
+- [x] AC-03: The public guide links all machine contracts, explains adapter
   adoption and states that external runtimes enforce the boundary on ingress,
   admission and completion.
-- [ ] AC-04: Version and changelog publish the standard as 0.2.0.
+- [x] AC-04: Version and changelog publish the standard as 0.2.0.
 - [ ] AC-05: Conformance, required-check derivation, governance and diff checks
   pass.
 

@@ -2,3 +2,13 @@
 user request to investigate, enforce, validate and publish this standard.
 Base: c8212fce20c8029ad76d03435e6de64756a356cb
 Plan state: no implementation files changed before this plan-only commit.
+2026-08-25T00:01:00Z IMPLEMENTATION
+- python3 docs/communication/conformance.py self-test
+  => valid=true, schemaCount=3, fixtureCount=2, failures=[]
+- python3 .governance/check_required_checks.py --root .
+  => required and published names match for both workflows
+- ./project/governance-check.sh --actor agent --base
+  c8212fce20c8029ad76d03435e6de64756a356cb
+  => GOV-PASS: passed (0 errors, 0 warnings)
+- git diff --check
+  => PASS

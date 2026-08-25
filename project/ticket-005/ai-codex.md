@@ -19,12 +19,17 @@ shows external adapters where to apply the same runner.
 2. Convert the required-check declaration to the multi-workflow form and add
    the new exact check context.
 3. Publish adoption guidance and version 0.2.0.
-4. Validate local/derived check names, governance and the final diff.
+4. Validate workflow-bound check names, governance and the final diff.
 
 ## Actual changes
 
 - Initialized the bounded ticket and recorded SESSION_EXECUTION_AUTHORIZATION
   from the request to execute this work.
+- Added the pinned, read-only `communication / conformance` pull-request job.
+- Declared the new check with its exact workflow binding for protected
+  validator-agent consumption.
+- Linked the machine contracts and runtime adoption boundaries from the public
+  guide and released version 0.2.0.
 
 ## Blockers
 

@@ -77,7 +77,7 @@
         "criterion": "AC-05",
         "commands": [
           "python3 docs/communication/conformance.py self-test",
-          "python3 .governance/generate_required_checks.py .",
+          "python3 .governance/check_required_checks.py --root .",
           "./project/governance-check.sh --actor agent --base c8212fce20c8029ad76d03435e6de64756a356cb",
           "git diff --check c8212fce20c8029ad76d03435e6de64756a356cb..HEAD"
         ],

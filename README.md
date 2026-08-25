@@ -2,7 +2,7 @@
 {
   "schema": "wellmanifest.guide/v1",
   "id": "how-to-use-subactor",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "status": "current",
   "updated": "2026-08-25",
   "home": "wellmanifest",
@@ -132,6 +132,30 @@ Subactor POWINIEN:
 5. pokazywać stan, zdarzenia i receipts podczas wykonania;
 6. zakończyć dopiero po spełnieniu kryteriów dowodowych albo zgłosić konkretną
    blokadę wraz z minimalną potrzebną decyzją.
+
+### Maszynowa bramka komunikacji
+
+Opis powyżej ma normatywne odpowiedniki w
+[`docs/communication`](docs/communication/README.md): envelope delegacji,
+zdarzenie runtime POA i kontrakt narzędzia MCP. Adapter agenta/LLM MUSI
+zwalidować envelope na wejściu do Control; orchestrator MUSI zwalidować
+zdarzenie admission przed uruchomieniem kolejki; adapter MCP MUSI walidować
+katalog narzędzi przed jego udostępnieniem modelowi. Projekcja webowa i CLI
+zachowują ten sam kontrakt semantyczny.
+
+```bash
+python3 docs/communication/conformance.py self-test
+python3 docs/communication/conformance.py check delegation request.json
+python3 docs/communication/conformance.py check runtime event.json
+python3 docs/communication/conformance.py check mcp tool.json
+```
+
+Repozytorium wymusza self-test w każdym PR przez wymagany check
+`communication / conformance`. Repozytorium adoptujące standard MUSI uruchamiać
+ten sam check oraz zastosować walidator na granicach runtime; samo skopiowanie
+dokumentacji nie jest adopcją. Stabilne kody `COMM-*`, `POA-*` i `MCP-*`
+pozwalają orchestratorowi odrzucić plan i utworzyć wyższą rewizję w tym samym
+tickecie zamiast omijać bramkę.
 
 ## 4. Władza wykonawcza i rola SubLLM
 
