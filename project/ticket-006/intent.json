@@ -1,0 +1,113 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-006",
+  "summary": "Require exact POA resource and grant bindings before admission",
+  "workstream": "integration",
+  "classification": {
+    "kind": "BUG",
+    "priority": "P1",
+    "origin": "regression"
+  },
+  "allowedPaths": [
+    "docs/communication/README.md",
+    "docs/communication/runtime-event.schema.v2.json",
+    "docs/communication/conformance.py",
+    "docs/communication/fixtures/valid.json",
+    "docs/communication/fixtures/invalid.json",
+    "project/ticket-006/**",
+    "TODO.md",
+    "project/TICKETS.md"
+  ],
+  "forbiddenPaths": ["project/ticket-*/user-*.md"],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "939950c967961ca694ac932907b79c384cd2dee5",
+    "targetBranch": "main",
+    "outcome": "POA runtime admission rejects processes whose grant or admission receipt is not bound to the exact registered actor, operation, process URI and resource URI set",
+    "nonGoals": [
+      "Change Subactor runtime or repair ticket-068",
+      "Put secret values in plans, tickets or logs",
+      "Treat a URI, registry entry or transport as an authority grant",
+      "Remove or rewrite the published runtime-event v1 contract"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 30,
+    "budgets": {
+      "maxImplementationFiles": 5,
+      "maxAffectedComponents": 2,
+      "maxPublicInterfaceChanges": 1,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Publish additive runtime-event v2 with exact per-process resource and grant bindings, enforce cross-field equality in the dependency-free conformance runner, and preserve v1 for existing adopters",
+      "components": [
+        {
+          "name": "poa-runtime-contract-v2",
+          "paths": [
+            "docs/communication/runtime-event.schema.v2.json",
+            "docs/communication/README.md"
+          ]
+        },
+        {
+          "name": "poa-resource-conformance",
+          "paths": [
+            "docs/communication/conformance.py",
+            "docs/communication/fixtures/**"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [
+        "wellmanifest.subactor-communication/runtime-event/v2"
+      ],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Close the PR without merge; published v1 and release 0.2.0 remain unchanged"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": ["python3 docs/communication/conformance.py self-test"],
+        "evidence": "Runtime-event v2 schema and valid fixture"
+      },
+      {
+        "criterion": "AC-02",
+        "commands": ["python3 docs/communication/conformance.py self-test"],
+        "evidence": "Exact grant-binding semantic checks and adversarial fixture"
+      },
+      {
+        "criterion": "AC-03",
+        "commands": ["python3 docs/communication/conformance.py self-test"],
+        "evidence": "Admission binding semantic checks"
+      },
+      {
+        "criterion": "AC-04",
+        "commands": ["python3 docs/communication/conformance.py self-test"],
+        "evidence": "Stable POA resource/grant findings"
+      },
+      {
+        "criterion": "AC-05",
+        "commands": ["python3 docs/communication/conformance.py self-test"],
+        "evidence": "Schema inventory validates v1 and v2 together"
+      },
+      {
+        "criterion": "AC-06",
+        "commands": [
+          "python3 docs/communication/conformance.py self-test",
+          "./project/governance-check.sh --actor agent --base 939950c967961ca694ac932907b79c384cd2dee5",
+          "git diff --check 939950c967961ca694ac932907b79c384cd2dee5..HEAD"
+        ],
+        "evidence": "project/ticket-006/ai-codex-logs.txt"
+      }
+    ]
+  }
+}
