@@ -29,6 +29,15 @@ that this omission can admit a semantically unexecutable process shape.
   from the request to execute this work.
 - Resolved that these artifacts are not present in Platform's managed artifact
   registry; this repository's own versioned governance remains authoritative.
+- Added additive runtime-event v2 without rewriting the published v1 schema.
+- Required every queued process to declare exact process/actor/operation and
+  registered source, target or scope resource URI bindings.
+- Required each mutation grant and admission receipt to match the planned URI
+  sets exactly, with stable resource/grant/admission findings.
+- Added a valid exact credential binding and an adversarial generic deployment
+  harvest fixture derived from the live fail-closed correction.
+- Kept root guide/release changes outside this integration ticket after the
+  governance gate identified their separate governance ownership.
 
 ## Blockers
 

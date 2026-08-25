@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wellmanifest.dev/schemas/subactor-communication/runtime-event.schema.v2.json",
+  "title": "Subactor POA runtime event with exact resource authority",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "eventId",
+    "ticket",
+    "correlationId",
+    "target",
+    "state",
+    "queue",
+    "plan",
+    "admission",
+    "evidence"
+  ],
+  "$defs": {
+    "uriRef": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9+.-]*://[^\\s]+$"
+    },
+    "resourceBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "resourceUri", "registryRef"],
+      "properties": {
+        "role": {"enum": ["source", "target", "scope"]},
+        "resourceUri": {"$ref": "#/$defs/uriRef"},
+        "registryRef": {"$ref": "#/$defs/uriRef"}
+      }
+    },
+    "grantBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "grantRef",
+        "boundActorRef",
+        "boundProcessUri",
+        "boundOperation",
+        "boundResourceUris"
+      ],
+      "properties": {
+        "grantRef": {"$ref": "#/$defs/uriRef"},
+        "boundActorRef": {"$ref": "#/$defs/uriRef"},
+        "boundProcessUri": {"$ref": "#/$defs/uriRef"},
+        "boundOperation": {"type": "string", "minLength": 1},
+        "boundResourceUris": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/uriRef"}
+        }
+      }
+    },
+    "processBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "processUri",
+        "actorRef",
+        "operation",
+        "effect",
+        "resources"
+      ],
+      "properties": {
+        "processUri": {"$ref": "#/$defs/uriRef"},
+        "actorRef": {"$ref": "#/$defs/uriRef"},
+        "operation": {"type": "string", "minLength": 1},
+        "effect": {"enum": ["observe", "mutate"]},
+        "resources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/resourceBinding"}
+        },
+        "grant": {"$ref": "#/$defs/grantBinding"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"effect": {"const": "mutate"}},
+            "required": ["effect"]
+          },
+          "then": {"required": ["grant"]}
+        }
+      ]
+    }
+  },
+  "properties": {
+    "schema": {
+      "const": "wellmanifest.subactor-communication/runtime-event/v2"
+    },
+    "eventId": {"type": "string", "minLength": 1},
+    "ticket": {"type": "string", "minLength": 1},
+    "correlationId": {"type": "string", "minLength": 1},
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["system", "class"],
+      "properties": {
+        "system": {"const": "subactor"},
+        "class": {"const": "autonomous_system"}
+      }
+    },
+    "state": {
+      "enum": [
+        "planned",
+        "validating",
+        "admitted",
+        "replan_required",
+        "running",
+        "waiting_authority",
+        "blocked",
+        "completed",
+        "failed"
+      ]
+    },
+    "queue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["revision", "processes"],
+      "properties": {
+        "revision": {"type": "integer", "minimum": 1},
+        "previousRevision": {"type": "integer", "minimum": 1},
+        "processes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/processBinding"}
+        }
+      }
+    },
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["planHash", "orchestratorRef"],
+      "properties": {
+        "planHash": {"type": "string", "minLength": 1},
+        "previousPlanHash": {"type": "string", "minLength": 1},
+        "orchestratorRef": {"$ref": "#/$defs/uriRef"}
+      }
+    },
+    "admission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "validatorIndependent"],
+      "properties": {
+        "decision": {"enum": ["PENDING", "ADMITTED", "REJECTED"]},
+        "validatorIndependent": {"type": "boolean"},
+        "validatorRef": {"$ref": "#/$defs/uriRef"},
+        "receiptRef": {"$ref": "#/$defs/uriRef"},
+        "boundTicket": {"type": "string", "minLength": 1},
+        "boundQueueRevision": {"type": "integer", "minimum": 1},
+        "boundPlanHash": {"type": "string", "minLength": 1},
+        "boundProcessUris": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/uriRef"}
+        },
+        "boundResourceUris": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/uriRef"}
+        },
+        "findings": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"decision": {"const": "ADMITTED"}},
+            "required": ["decision"]
+          },
+          "then": {
+            "required": [
+              "validatorRef",
+              "receiptRef",
+              "boundTicket",
+              "boundQueueRevision",
+              "boundPlanHash",
+              "boundProcessUris",
+              "boundResourceUris"
+            ]
+          }
+        }
+      ]
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "higherAuthorityApprovalRef": {"$ref": "#/$defs/uriRef"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source"],
+      "properties": {
+        "source": {"enum": ["runtime", "control", "validator", "readback"]},
+        "events": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/uriRef"}
+        },
+        "receipts": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/uriRef"}
+        },
+        "readback": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["ref", "passed", "method"],
+          "properties": {
+            "ref": {"$ref": "#/$defs/uriRef"},
+            "passed": {"const": true},
+            "method": {
+              "enum": ["independent_query", "eql", "target_system_receipt"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

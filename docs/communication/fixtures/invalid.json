@@ -84,6 +84,68 @@
       }
     },
     {
+      "id": "unbound-generic-credential-harvest-v2",
+      "kind": "runtime",
+      "expectValid": false,
+      "expectedFindings": [
+        "POA-RESOURCE-BINDING-001",
+        "POA-GRANT-BINDING-001",
+        "POA-ADMISSION-001"
+      ],
+      "document": {
+        "schema": "wellmanifest.subactor-communication/runtime-event/v2",
+        "eventId": "bad-credential-harvest-001",
+        "ticket": "PLF-068",
+        "correlationId": "corr-generic-deployment-provider",
+        "target": {"system": "subactor", "class": "autonomous_system"},
+        "state": "admitted",
+        "queue": {
+          "revision": 3,
+          "previousRevision": 2,
+          "processes": [
+            {
+              "processUri": "hub://host/credential/command/harvest",
+              "actorRef": "actor://subactor/project-operator-bot",
+              "operation": "credential.harvest",
+              "effect": "mutate",
+              "resources": [
+                {
+                  "role": "source",
+                  "resourceUri": "deployment",
+                  "registryRef": ""
+                }
+              ],
+              "grant": {
+                "grantRef": "grant://subactor/PLF-068/generic-harvest",
+                "boundActorRef": "actor://subactor/wrong-bot",
+                "boundProcessUri": "hub://host/credential/command/harvest",
+                "boundOperation": "credential.harvest",
+                "boundResourceUris": ["env://broad-search"]
+              }
+            }
+          ]
+        },
+        "plan": {
+          "planHash": "sha256:generic-credential-plan",
+          "previousPlanHash": "sha256:previous-plan",
+          "orchestratorRef": "actor://subactor/orchestrator"
+        },
+        "admission": {
+          "decision": "ADMITTED",
+          "validatorIndependent": true,
+          "validatorRef": "actor://subactor/validator-agent",
+          "receiptRef": "receipt://subactor/admission/PLF-068/3",
+          "boundTicket": "PLF-068",
+          "boundQueueRevision": 3,
+          "boundPlanHash": "sha256:generic-credential-plan",
+          "boundProcessUris": ["hub://host/credential/command/harvest"],
+          "boundResourceUris": ["env://broad-search"],
+          "findings": []
+        },
+        "evidence": {"source": "validator", "events": [], "receipts": []}
+      }
+    },
+    {
       "id": "generic-authoritative-mcp-shell",
       "kind": "mcp",
       "expectValid": false,

@@ -2,7 +2,7 @@
 
 - [ ] [`ticket-006`](project/ticket-006/README.md) — require exact registered
   POA resource and grant bindings before runtime admission. Status:
-  `IN_PROGRESS / EDIT`; workstream: `integration`.
+  `IN_PROGRESS / PUBLICATION`; workstream: `integration`.
 - [x] [`ticket-001`](project/ticket-001/README.md) — adopt immutable repository
   governance before publishing the guide. Status: `DONE / DONE`;
   workstream: `governance`.

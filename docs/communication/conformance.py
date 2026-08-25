@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Dependency-free semantic conformance for Subactor communication v1."""
+"""Dependency-free semantic conformance for Subactor communication."""
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any, Callable
@@ -14,6 +15,7 @@ ROOT = Path(__file__).resolve().parent
 SCHEMAS = (
     ROOT / "delegation-envelope.schema.v1.json",
     ROOT / "runtime-event.schema.v1.json",
+    ROOT / "runtime-event.schema.v2.json",
     ROOT / "mcp-tool-contract.schema.v1.json",
 )
 GENERIC_MCP_NAMES = {
@@ -24,6 +26,7 @@ GENERIC_MCP_NAMES = {
     "execute_any",
     "invoke",
 }
+URI_REF_RE = re.compile(r"^[a-z][a-z0-9+.-]*://[^\s]+$")
 
 
 def finding(code: str, path: str, message: str) -> dict[str, str]:
@@ -51,6 +54,19 @@ def list_at(value: Any, key: str) -> list[Any]:
     if isinstance(value, dict) and isinstance(value.get(key), list):
         return value[key]
     return []
+
+
+def is_uri_ref(value: Any) -> bool:
+    return isinstance(value, str) and URI_REF_RE.fullmatch(value) is not None
+
+
+def exact_string_set(values: list[Any], expected: set[str]) -> bool:
+    return (
+        bool(values)
+        and all(isinstance(value, str) for value in values)
+        and len(values) == len(set(values))
+        and set(values) == expected
+    )
 
 
 def forbidden_keys(value: Any, names: set[str], prefix: str = "$") -> list[str]:
@@ -203,8 +219,13 @@ def validate_runtime(document: Any) -> list[dict[str, str]]:
     if not isinstance(document, dict):
         return [finding("COMM-SHAPE-001", "$", "document must be an object")]
 
+    schema = document.get("schema")
     require(
-        document.get("schema") == "wellmanifest.subactor-communication/runtime-event/v1",
+        schema
+        in {
+            "wellmanifest.subactor-communication/runtime-event/v1",
+            "wellmanifest.subactor-communication/runtime-event/v2",
+        },
         findings,
         "COMM-SHAPE-001",
         "$.schema",
@@ -223,6 +244,102 @@ def validate_runtime(document: Any) -> list[dict[str, str]]:
     queue = object_at(document, "queue")
     plan = object_at(document, "plan")
     admission = object_at(document, "admission")
+    bound_process_uris: set[str] = set()
+    bound_resource_uris: set[str] = set()
+
+    if schema == "wellmanifest.subactor-communication/runtime-event/v2":
+        processes = list_at(queue, "processes")
+        require(
+            bool(processes),
+            findings,
+            "POA-RESOURCE-BINDING-001",
+            "$.queue.processes",
+            "runtime-event v2 requires at least one exactly bound process",
+        )
+        for index, process in enumerate(processes):
+            path = f"$.queue.processes[{index}]"
+            if not isinstance(process, dict):
+                findings.append(
+                    finding("COMM-SHAPE-001", path, "queued process must be an object")
+                )
+                continue
+
+            process_uri = process.get("processUri")
+            actor_ref = process.get("actorRef")
+            operation = process.get("operation")
+            resources = list_at(process, "resources")
+            resource_uris: list[str] = []
+            resources_exact = bool(resources)
+            for resource_index, resource in enumerate(resources):
+                resource_path = f"{path}.resources[{resource_index}]"
+                if not isinstance(resource, dict):
+                    resources_exact = False
+                    findings.append(
+                        finding(
+                            "POA-RESOURCE-BINDING-001",
+                            resource_path,
+                            "resource binding must be an object",
+                        )
+                    )
+                    continue
+                resource_uri = resource.get("resourceUri")
+                registry_ref = resource.get("registryRef")
+                resource_exact = (
+                    resource.get("role") in {"source", "target", "scope"}
+                    and is_uri_ref(resource_uri)
+                    and is_uri_ref(registry_ref)
+                )
+                resources_exact = resources_exact and resource_exact
+                if isinstance(resource_uri, str):
+                    resource_uris.append(resource_uri)
+
+            resources_exact = (
+                resources_exact
+                and len(resource_uris) == len(resources)
+                and len(resource_uris) == len(set(resource_uris))
+            )
+            require(
+                is_uri_ref(process_uri)
+                and is_uri_ref(actor_ref)
+                and isinstance(operation, str)
+                and bool(operation.strip())
+                and process.get("effect") in {"observe", "mutate"}
+                and resources_exact,
+                findings,
+                "POA-RESOURCE-BINDING-001",
+                path,
+                "every process requires exact process, actor, operation and registered resource URI bindings",
+            )
+
+            if isinstance(process_uri, str):
+                require(
+                    process_uri not in bound_process_uris,
+                    findings,
+                    "POA-RESOURCE-BINDING-001",
+                    f"{path}.processUri",
+                    "process URI must be unique within one queue revision",
+                )
+                bound_process_uris.add(process_uri)
+            bound_resource_uris.update(resource_uris)
+
+            if process.get("effect") == "mutate":
+                grant = object_at(process, "grant")
+                grant_resource_uris = list_at(grant, "boundResourceUris")
+                grant_exact = (
+                    is_uri_ref(grant.get("grantRef"))
+                    and grant.get("boundActorRef") == actor_ref
+                    and grant.get("boundProcessUri") == process_uri
+                    and grant.get("boundOperation") == operation
+                    and exact_string_set(grant_resource_uris, set(resource_uris))
+                )
+                require(
+                    grant_exact,
+                    findings,
+                    "POA-GRANT-BINDING-001",
+                    f"{path}.grant",
+                    "mutation grant must bind the exact actor, process, operation and resource URI set",
+                )
+
     executable = state in {"admitted", "running", "waiting_authority", "completed"}
     if executable:
         admitted = (
@@ -234,12 +351,20 @@ def validate_runtime(document: Any) -> list[dict[str, str]]:
             and admission.get("boundQueueRevision") == queue.get("revision")
             and admission.get("boundPlanHash") == plan.get("planHash")
         )
+        if schema == "wellmanifest.subactor-communication/runtime-event/v2":
+            admission_process_uris = list_at(admission, "boundProcessUris")
+            admission_resource_uris = list_at(admission, "boundResourceUris")
+            admitted = (
+                admitted
+                and exact_string_set(admission_process_uris, bound_process_uris)
+                and exact_string_set(admission_resource_uris, bound_resource_uris)
+            )
         require(
             admitted,
             findings,
             "POA-ADMISSION-001",
             "$.admission",
-            "execution requires an independent admission receipt bound to ticket, queue revision and planHash",
+            "execution requires independent admission bound to ticket, queue revision, planHash and every planned process/resource URI",
         )
 
     if admission.get("decision") == "REJECTED" or state == "replan_required":

@@ -1,2 +1,7 @@
 2026-08-25T22:32:00+02:00 OBSERVATION: Core ticket-068 correction proved that ticket, queue revision, plan hash and a generic grant did not establish exact source/destination identity; unregistered provider=deployment and missing credential_ref/account_id/vault_entry_id made the planned process unexecutable.
 2026-08-25T22:33:00+02:00 ARTIFACT: no how-to-use-subactor communication artifact was registered in Platform config/artifact-registry.json; repository-local declared versions and governance apply.
+2026-08-25T22:38:00+02:00 CONFORMANCE: self-test valid=true, schemaCount=4, fixtureCount=2; the adversarial v2 fixture emitted POA-RESOURCE-BINDING-001, POA-GRANT-BINDING-001 and POA-ADMISSION-001.
+2026-08-25T22:39:00+02:00 SCHEMA: Draft 2020-12 schema check passed; exact-resource-bound-runtime-v2 validated and the generic credential-harvest fixture was rejected with two structural schema errors plus semantic findings.
+2026-08-25T22:40:00+02:00 GOVERNANCE: initial gate correctly rejected root README/CHANGELOG release paths as governance-owned; narrowed the integration ticket instead of bypassing workstream ownership.
+2026-08-25T22:41:00+02:00 VALIDATION: managed governance passed with 0 errors and 0 warnings against accepted base 939950c967961ca694ac932907b79c384cd2dee5.
+2026-08-25T22:42:00+02:00 PUBLICATION: integration contract is ready for exact-head CI and Validator Agent review; ticket remains IN_PROGRESS until protected merge and a separate governance-only closure.

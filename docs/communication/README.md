@@ -2,7 +2,7 @@
 {
   "schema": "wellmanifest.subactor-communication/specification/v1",
   "id": "subactor-communication",
-  "version": 1,
+  "version": 2,
   "status": "current",
   "updated": "2026-08-25"
 }
@@ -29,7 +29,8 @@ cognitive capability. It is never Subactor's identity or authority issuer.
 | Artifact | Boundary |
 | --- | --- |
 | `delegation-envelope.schema.v1.json` | Outcome delegation, scope, acceptance, authority, effects and evidence requirements |
-| `runtime-event.schema.v1.json` | Ticket-bound POA queue validation, admission, replan, execution and evidence-backed completion |
+| `runtime-event.schema.v1.json` | Published compatibility contract for ticket/queue/plan admission |
+| `runtime-event.schema.v2.json` | Exact per-process actor, operation, registered resource, grant and admission bindings |
 | `mcp-tool-contract.schema.v1.json` | Bounded semantic MCP capabilities whose transport never grants authority |
 | `conformance.py` | Dependency-free semantic checks and stable finding codes |
 | `fixtures/valid.json` | Positive exchange examples for all three boundaries |
@@ -48,9 +49,11 @@ not create an authority grant or prove task completion.
 3. A supervisor observes official Control surfaces and evidence. It MUST NOT
    use service repositories, private packages or generic tools to perform the
    target task for Subactor.
-4. A planned queue revision is validated before execution. The admission
-   receipt binds ticket, queue revision and `planHash` and comes from an
-   independent validator.
+4. A planned queue revision is validated before execution. In runtime-event
+   v2 every process binds an exact process URI, actor, operation and registered
+   resource URI set. Every mutation grant binds that same tuple exactly. The
+   independent admission receipt binds the ticket, queue revision, `planHash`,
+   process URI set and resource URI set.
 5. Rejection moves the same ticket to `replan_required`; the orchestrator emits
    a higher queue revision and a new plan hash before asking for admission
    again. Rejection is never permission to bypass the gate.
@@ -67,6 +70,13 @@ A POA URI identifies a registered resource or process in the same general
 sense that mobile operating systems use stable identifiers for applications,
 resources and operations. The identifier does not grant access. Control must
 resolve the actor, contract/grant, exact plan and applicable policy separately.
+
+An address-shaped string is not enough. Before admission, each resource URI
+must carry a registry reference and each mutating process must prove set-equal
+grant bindings for actor, process URI, operation and all source/target/scope
+resource URIs. A generic provider label, broad `.env` search, model credential
+or destination name cannot stand in for an exact registered resource. Missing
+or mismatched identity returns the same ticket to `replan_required`.
 
 The important difference from a simple manual permission dialog is the
 reversibility gate:
@@ -90,6 +100,8 @@ reversibility gate:
 | `COMM-EFFECT-002` | Irreversible effect lacks higher-authority approval |
 | `COMM-EVIDENCE-001` | Required evidence chain is incomplete |
 | `POA-ADMISSION-001` | Execution is not bound to an admitted queue revision/plan |
+| `POA-RESOURCE-BINDING-001` | Process lacks exact registered actor/operation/resource identity |
+| `POA-GRANT-BINDING-001` | Mutation grant does not exactly match its process and resource URI set |
 | `POA-REPLAN-001` | Rejected work did not return to a higher plan revision |
 | `POA-COMPLETION-001` | Completion lacks receipts and independent readback |
 | `MCP-CAPABILITY-001` | MCP exposes an unbounded generic execution primitive |
