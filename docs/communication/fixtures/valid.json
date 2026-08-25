@@ -111,6 +111,85 @@
       }
     },
     {
+      "id": "exact-resource-bound-runtime-v2",
+      "kind": "runtime",
+      "expectValid": true,
+      "document": {
+        "schema": "wellmanifest.subactor-communication/runtime-event/v2",
+        "eventId": "evt-20260825-credential-bind",
+        "ticket": "PLF-068",
+        "correlationId": "corr-credential-bind-068",
+        "target": {"system": "subactor", "class": "autonomous_system"},
+        "state": "completed",
+        "queue": {
+          "revision": 4,
+          "previousRevision": 3,
+          "processes": [
+            {
+              "processUri": "process://subactor/deployment-credential-bind/v2",
+              "actorRef": "actor://subactor/project-operator-bot",
+              "operation": "credential.bind_to_vault",
+              "effect": "mutate",
+              "resources": [
+                {
+                  "role": "source",
+                  "resourceUri": "credential-ref://inventory/account/sftp-068",
+                  "registryRef": "registry://subactor/inventory/credential-refs"
+                },
+                {
+                  "role": "target",
+                  "resourceUri": "vault-entry://private/deployment/sftp-068",
+                  "registryRef": "registry://subactor/vault/entries"
+                }
+              ],
+              "grant": {
+                "grantRef": "grant://subactor/PLF-068/sftp-bind",
+                "boundActorRef": "actor://subactor/project-operator-bot",
+                "boundProcessUri": "process://subactor/deployment-credential-bind/v2",
+                "boundOperation": "credential.bind_to_vault",
+                "boundResourceUris": [
+                  "credential-ref://inventory/account/sftp-068",
+                  "vault-entry://private/deployment/sftp-068"
+                ]
+              }
+            }
+          ]
+        },
+        "plan": {
+          "planHash": "sha256:exact-resource-bound-plan",
+          "previousPlanHash": "sha256:missing-resource-plan",
+          "orchestratorRef": "actor://subactor/orchestrator"
+        },
+        "admission": {
+          "decision": "ADMITTED",
+          "validatorIndependent": true,
+          "validatorRef": "actor://subactor/validator-agent",
+          "receiptRef": "receipt://subactor/admission/PLF-068/4",
+          "boundTicket": "PLF-068",
+          "boundQueueRevision": 4,
+          "boundPlanHash": "sha256:exact-resource-bound-plan",
+          "boundProcessUris": [
+            "process://subactor/deployment-credential-bind/v2"
+          ],
+          "boundResourceUris": [
+            "credential-ref://inventory/account/sftp-068",
+            "vault-entry://private/deployment/sftp-068"
+          ],
+          "findings": []
+        },
+        "evidence": {
+          "source": "readback",
+          "events": ["event://subactor/PLF-068/completed"],
+          "receipts": ["receipt://subactor/PLF-068/sftp-bind"],
+          "readback": {
+            "ref": "readback://vault/deployment/sftp-068",
+            "passed": true,
+            "method": "independent_query"
+          }
+        }
+      }
+    },
+    {
       "id": "bounded-mcp-observation",
       "kind": "mcp",
       "expectValid": true,
