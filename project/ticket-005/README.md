@@ -3,7 +3,7 @@
 - **ID**: ticket-005
 - **Owner**: unresolved:human
 - **Status**: IN_PROGRESS
-- **Workflow state**: VALIDATION
+- **Workflow state**: PUBLICATION
 - **Created**: 2026-08-25
 
 ## Goal and scope
@@ -22,7 +22,7 @@ release the machine-checkable contract as version 0.2.0.
   adoption and states that external runtimes enforce the boundary on ingress,
   admission and completion.
 - [x] AC-04: Version and changelog publish the standard as 0.2.0.
-- [ ] AC-05: Conformance, required-check derivation, governance and diff checks
+- [x] AC-05: Conformance, required-check binding, governance and diff checks
   pass.
 
 ## Participants

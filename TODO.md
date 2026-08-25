@@ -11,7 +11,7 @@
   `DONE / DONE`; workstream: `integration`.
 - [ ] [`ticket-005`](project/ticket-005/README.md) — enforce communication
   conformance as an exact-head CI and validator check. Status:
-  `IN_PROGRESS / VALIDATION`; workstream: `governance`.
+  `IN_PROGRESS / PUBLICATION`; workstream: `governance`.
 
 <!-- TICKETS:START -->
 <!-- TICKETS:END -->
