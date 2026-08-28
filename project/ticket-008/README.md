@@ -2,8 +2,8 @@
 
 - **ID**: ticket-008
 - **Owner**: unresolved:human
-- **Status**: IN_PROGRESS
-- **Workflow state**: EDIT
+- **Status**: DONE
+- **Workflow state**: DONE
 - **Created**: 2026-08-28
 
 ## Goal and scope
@@ -24,7 +24,7 @@ independent validation.
 - [x] AC-04: A C2004 profile defines bounded refactor, test, deploy/readback and flash stages.
 - [x] AC-05: Documentation identifies discovery, authority and proof requirements per interface.
 - [x] AC-06: Communication and repository governance checks pass.
-- [ ] AC-07: The exact PR head receives trusted independent validation before merge.
+- [x] AC-07: The exact PR head receives trusted independent validation before merge.
 
 ## Participants
 

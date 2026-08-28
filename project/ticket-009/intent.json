@@ -1,0 +1,40 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-009",
+  "summary": "Publish Subactor interface profile guide",
+  "workstream": "governance",
+  "classification": {"kind": "FEATURE", "priority": "P1", "origin": "requested"},
+  "allowedPaths": ["README.md", "CHANGELOG.md", "TODO.md", "project/TICKETS.md", "project/ticket-008/**", "project/ticket-009/**"],
+  "forbiddenPaths": ["project/ticket-*/user-*.md"],
+  "stacks": ["documentation"],
+  "dependsOn": ["ticket-008"],
+  "conflictsWith": [],
+  "integrationTicket": "ticket-008",
+  "delivery": {
+    "acceptedBaseSha": "ad3d5a045cbc292f19684adb24b1240b6677b451",
+    "targetBranch": "main",
+    "outcome": "Humans and LLM supervisors can select the correct Subactor interface and follow the bounded C2004 process without confusing transport with authority",
+    "nonGoals": ["Change runtime", "Change integrated profile digests", "Activate candidate C2004 connectors", "Claim success without receipts"],
+    "complexity": "S",
+    "estimatedMinutes": 20,
+    "budgets": {"maxImplementationFiles": 5, "maxAffectedComponents": 2, "maxPublicInterfaceChanges": 0, "maxRuntimeDependencies": 0},
+    "architecture": {
+      "status": "accepted",
+      "decision": "Project the integrated machine profiles into the normative guide without duplicating their executable contract",
+      "components": [
+        {"name": "normative-guide", "paths": ["README.md"]},
+        {"name": "release-notes", "paths": ["CHANGELOG.md"]}
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {"impact": "none", "states": [], "evidence": []},
+      "rollback": "Close the PR without merge; integrated profiles remain available directly"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {"criterion": "AC-04", "commands": ["python3 docs/standard/conformance.py check", "python3 docs/standard/conformance.py check --discover", "python3 -m unittest docs/standard/conformance_test.py", "python3 docs/communication/conformance.py self-test"], "evidence": "profile and communication receipts"},
+      {"criterion": "AC-05", "commands": ["./project/governance-check.sh --actor agent --base ad3d5a045cbc292f19684adb24b1240b6677b451", "git diff --check ad3d5a045cbc292f19684adb24b1240b6677b451..HEAD"], "evidence": "validator exact-head review"}
+    ]
+  }
+}
