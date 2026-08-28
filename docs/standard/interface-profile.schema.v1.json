@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wellmanifest.dev/schemas/subactor-usage/interface-profile.v1.json",
+  "title": "Subactor usage interface profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "version",
+    "status",
+    "executable",
+    "runtime",
+    "discovery",
+    "operations",
+    "invariants"
+  ],
+  "properties": {
+    "schema": {"const": "wellmanifest.subactor-usage/interface-profile/v1"},
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "version": {"type": "integer", "minimum": 1},
+    "status": {"enum": ["current", "candidate", "deprecated"]},
+    "executable": {"type": "string", "minLength": 1},
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "revision", "observedVersion"],
+      "properties": {
+        "repository": {"type": "string", "pattern": "^[a-z0-9_.-]+/[a-z0-9_.-]+$"},
+        "revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "observedVersion": {"type": "string", "minLength": 1}
+      }
+    },
+    "discovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["argv", "expectedCommands"],
+      "properties": {
+        "argv": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "expectedCommands": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "command", "effect", "authority", "requiredEvidence"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "command": {"type": "string", "minLength": 1},
+          "effect": {"enum": ["observe", "local_write", "external_write"]},
+          "authority": {"enum": ["observe", "plan", "dry_run", "apply"]},
+          "requiredFlags": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+          "requiredEvidence": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+        }
+      }
+    },
+    "invariants": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  }
+}

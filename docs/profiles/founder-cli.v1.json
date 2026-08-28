@@ -1,0 +1,31 @@
+{
+  "schema": "wellmanifest.subactor-usage/interface-profile/v1",
+  "id": "founder-cli",
+  "version": 1,
+  "status": "current",
+  "executable": "subactor",
+  "runtime": {
+    "repository": "subactor/platform",
+    "revision": "b7363ead298f5ef3740dc1ce34712e13d80acdc5",
+    "observedVersion": "unversioned-cli@2026-08-28"
+  },
+  "discovery": {
+    "argv": ["subactor", "help"],
+    "expectedCommands": ["login", "chat", "ask", "founder", "tickets", "plans", "status", "watch", "dispatch", "reality", "uri", "health", "endpoints", "get", "post", "api"]
+  },
+  "operations": [
+    {"id": "system.health", "command": "health", "effect": "observe", "authority": "observe", "requiredEvidence": ["health_response"]},
+    {"id": "system.status", "command": "status", "effect": "observe", "authority": "observe", "requiredEvidence": ["dashboard_snapshot"]},
+    {"id": "delegation.plan", "command": "ask", "effect": "local_write", "authority": "plan", "requiredFlags": ["--json"], "requiredEvidence": ["ticket_or_rejection", "intent_result"]},
+    {"id": "delegation.dry_run", "command": "ask", "effect": "local_write", "authority": "dry_run", "requiredFlags": ["--execute", "--json"], "requiredEvidence": ["ticket", "plan_hash", "dry_run_receipt"]},
+    {"id": "delegation.apply", "command": "ask", "effect": "external_write", "authority": "apply", "requiredFlags": ["--apply", "--json"], "requiredEvidence": ["ticket", "plan_hash", "grant_ref", "execution_receipt", "independent_readback"]},
+    {"id": "process.plan", "command": "uri", "effect": "local_write", "authority": "plan", "requiredEvidence": ["ticket", "process_uri", "plan_hash"]}
+  ],
+  "invariants": [
+    "execute_is_dry_run",
+    "apply_requires_separate_authority",
+    "transport_never_grants_authority",
+    "discover_endpoints_before_post",
+    "completion_requires_receipt_and_readback"
+  ]
+}

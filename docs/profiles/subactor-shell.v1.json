@@ -1,0 +1,32 @@
+{
+  "schema": "wellmanifest.subactor-usage/interface-profile/v1",
+  "id": "subactor-shell",
+  "version": 1,
+  "status": "current",
+  "executable": "subactor-shell",
+  "runtime": {
+    "repository": "subactor/shell",
+    "revision": "fecc9f8aad05f2728f12cdf6b72b64c55ffaca10",
+    "observedVersion": "0.2.2"
+  },
+  "discovery": {
+    "argv": ["subactor-shell", "--help"],
+    "expectedCommands": ["init", "chat", "one", "data", "vault", "sessions", "export", "plans", "status", "tickets", "health", "dispatch", "uri", "api", "get", "post", "endpoints", "receipts", "metrics", "catalog", "connectors", "doctor", "acp-agent"]
+  },
+  "operations": [
+    {"id": "shell.doctor", "command": "doctor", "effect": "observe", "authority": "observe", "requiredEvidence": ["diagnostic_receipt"]},
+    {"id": "shell.catalog", "command": "catalog", "effect": "observe", "authority": "observe", "requiredEvidence": ["intent_catalog"]},
+    {"id": "shell.connectors", "command": "connectors", "effect": "observe", "authority": "observe", "requiredEvidence": ["connector_allowlist"]},
+    {"id": "shell.route", "command": "one", "effect": "local_write", "authority": "plan", "requiredEvidence": ["intent_ir_or_rejection", "route_decision"]},
+    {"id": "shell.plan_apply", "command": "plans", "effect": "external_write", "authority": "apply", "requiredFlags": ["apply", "--confirm", "EXECUTE"], "requiredEvidence": ["plan_hash", "state_fingerprint", "connector_preflight", "execution_receipt", "independent_readback"]},
+    {"id": "shell.process", "command": "uri", "effect": "external_write", "authority": "apply", "requiredFlags": ["--confirm", "EXECUTE"], "requiredEvidence": ["process_uri", "plan_hash", "grant_ref", "execution_receipt", "independent_readback"]}
+  ],
+  "invariants": [
+    "model_emits_intent_ir_not_commands",
+    "compiler_owns_execution_plan",
+    "named_connector_allowlist",
+    "external_write_requires_exact_execute",
+    "state_fingerprint_must_match",
+    "completion_requires_receipt_and_readback"
+  ]
+}

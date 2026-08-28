@@ -1,0 +1,33 @@
+{
+  "schema": "wellmanifest.subactor-usage/manifest/v1",
+  "id": "how-to-use-subactor",
+  "version": "0.4.0",
+  "status": "current",
+  "home": "wellmanifest",
+  "shape": "domain_pack",
+  "runtimeOwner": "subactor",
+  "communicationSpecification": {
+    "version": 2,
+    "path": "docs/communication/README.md"
+  },
+  "artifacts": [
+    {
+      "kind": "interface-profile",
+      "id": "founder-cli",
+      "path": "docs/profiles/founder-cli.v1.json",
+      "sha256": "c8cf46d73427130728fe1be87c634f91244bb3404a08322a85420bc7d1804fa1"
+    },
+    {
+      "kind": "interface-profile",
+      "id": "subactor-shell",
+      "path": "docs/profiles/subactor-shell.v1.json",
+      "sha256": "6f0da17cd7d71fd56a4cace88bc94dbe1849a7e4b8a15471ed14f6d2bd6d43cb"
+    },
+    {
+      "kind": "project-profile",
+      "id": "c2004-refactoring",
+      "path": "docs/profiles/c2004-refactoring.v1.json",
+      "sha256": "fc31e1968de7e8a07f806ec0857ccc33b8fca5162b51527b3266e264287efd92"
+    }
+  ]
+}
