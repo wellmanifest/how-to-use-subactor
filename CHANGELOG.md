@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0 - 2026-08-28
+
+- Split the Platform Founder CLI and persistent Subactor Shell into distinct,
+  closed interface profiles bound to observed runtime revisions.
+- Added a digest-bound manifest and deterministic conformance with optional
+  read-only discovery against installed CLI command surfaces.
+- Added a candidate C2004 profile covering refactor, tests, deployment,
+  runtime readback, hardware flash and device readback without arbitrary shell.
+
 ## 0.3.0 - 2026-08-25
 
 - Added additive POA runtime-event v2 with exact process, actor, operation and

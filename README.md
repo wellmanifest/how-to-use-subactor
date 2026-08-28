@@ -2,9 +2,9 @@
 {
   "schema": "wellmanifest.guide/v1",
   "id": "how-to-use-subactor",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "status": "current",
-  "updated": "2026-08-25",
+  "updated": "2026-08-28",
   "home": "wellmanifest",
   "shape": "domain_pack",
   "runtime_owner": "subactor"
@@ -16,6 +16,13 @@
 Normatywny przewodnik dla człowieka i LLM-a nadzorującego realizację zadań
 przez Subactor za pomocą CLI/shell, REST API, interfejsu webowego, MCP i
 wersjonowanych artefaktów.
+
+Wydanie `0.4.0` rozdziela niezmienne reguły od powierzchni wykonawczych.
+Kanoniczny [manifest standardu](docs/standard/manifest.v1.json) wiąże profile
+przez SHA-256, a profile [Founder CLI](docs/profiles/founder-cli.v1.json),
+[Subactor Shell](docs/profiles/subactor-shell.v1.json) i
+[refaktoryzacji C2004](docs/profiles/c2004-refactoring.v1.json) określają
+konkretne operacje, poziomy władzy i wymagane dowody.
 
 > **Subactor nie jest agentem LLM.** Jest autonomicznym systemem organizacyjnym,
 > któremu zleca się rezultat wraz z granicami i kryteriami dowodowymi. Rozmawiaj
@@ -195,6 +202,17 @@ To kolejność wyboru dostępnej powierzchni, a nie różne poziomy władzy. W I
 CLI/shell jest szczególnie użyteczne do ciągłej obserwacji, ale supervisor nadal
 wywołuje oficjalne polecenia Subactora, a nie prywatne paczki jego usług.
 
+### Profile zamiast zgadywania powierzchni
+
+| Interfejs | Właściciel runtime | Rola |
+| --- | --- | --- |
+| `subactor` | `subactor/platform` | Founder CLI: delegacja celu, Control, tickety, plany i procesy URI |
+| `subactor-shell` | `subactor/shell` | trwały bridge: IntentIR, lokalny routing, katalogi, nazwane connectory i receipts |
+
+Supervisor MUSI wybrać profil zgodny z faktycznym executable i rozpocząć od
+jego discovery. `--apply` w Founder CLI nie jest odpowiednikiem
+`--confirm EXECUTE` w Subactor Shell.
+
 Najpierw odkryj aktualną powierzchnię:
 
 ```bash
@@ -207,7 +225,7 @@ Adresy, porty i dostępne adaptery są cechą wdrożenia. NIE WOLNO kopiować
 historycznego portu z dokumentacji jako trwałego kontraktu. Użyj konfiguracji
 wdrożenia, service discovery albo wartości `SUBACTOR_*_URL`.
 
-### 5.1 CLI i shell
+### 5.1 Founder CLI (`subactor`)
 
 Shell supervisora służy do rozmowy z Subactorem i obserwacji systemu:
 
@@ -250,7 +268,42 @@ To omija Control, AQL, plan, receipts i organizacyjną odpowiedzialność. Jest
 dopuszczalne wyłącznie jako część zatwierdzonej, ograniczonej diagnozy lub
 naprawy samego mechanizmu autonomii — nigdy jako zwykły skrót realizacji celu.
 
-### 5.2 REST API
+### 5.2 Subactor Shell (`subactor-shell`)
+
+Subactor Shell nie zastępuje Founder CLI. Dodaje trwałe sesje, lokalny routing
+NL→IntentIR, deterministyczny kompilator planu, nazwane connectory, Vault refs,
+ACP oraz lokalne receipts. Powierzchnię odkrywa się bez mutacji:
+
+```bash
+subactor-shell --version
+subactor-shell --help
+subactor-shell doctor
+subactor-shell catalog --json
+subactor-shell connectors --json
+```
+
+Typowa obserwacja i planowanie:
+
+```bash
+subactor-shell status --json
+subactor-shell tickets --open --project c2004 --json
+subactor-shell plans list
+subactor-shell receipts list
+```
+
+Model może wybrać wyłącznie zarejestrowany intent. Operacja zmieniająca stan
+MUSI przejść przez plan, zgodny fingerprint i dokładne potwierdzenie:
+
+```bash
+subactor-shell plans show PLAN_ID
+subactor-shell plans apply PLAN_ID --confirm EXECUTE
+subactor-shell receipts show RECEIPT_ID
+```
+
+Brak intencji projektu, connectora, grantu, Vault lub tokenu Control oznacza
+`blocked`/`replan_required`, a nie pozwolenie na dowolny shell.
+
+### 5.3 REST API
 
 CLI udostępnia bezpieczne lustro REST, dzięki któremu supervisor nie musi
 samodzielnie składać adresów i nagłówków:
@@ -269,7 +322,7 @@ katalog API. Odczyt wiedzy MUSI preferować wersjonowane wewnętrzne wpisy, a
 artefakt tekstowy należy rozwiązać w rejestrze artefaktów. Token administracyjny
 przekazuje się w dozwolonym nagłówku/konfiguracji CLI, nigdy w URL-u lub logu.
 
-### 5.3 Web
+### 5.4 Web
 
 Interfejs webowy jest widokiem tego samego systemu. Zależnie od wdrożenia może
 obejmować panel Foundera, Planfile/tickety, obserwator statusu systemu, Grafanę i
@@ -281,7 +334,7 @@ Knowledge. Supervisor POWINIEN:
 4. potwierdzić krytyczny stan przez API/CLI, zdarzenie lub niezmienny receipt;
 5. udzielać zgody HITL tylko dla dokładnie opisanego skutku i planu.
 
-### 5.4 MCP
+### 5.5 MCP
 
 MCP powinno wystawiać ograniczony, semantyczny katalog, na przykład narzędzia
 do obserwacji stanu, utworzenia delegacji, podglądu planu, zatwierdzenia
@@ -294,7 +347,7 @@ rozszerza zakresu aktora, a identyfikator narzędzia nie zastępuje grantu.
 Nie każde wdrożenie musi mieć natywny adapter Subactor MCP; wtedy fallback do
 HTTPS lub oficjalnego CLI nie może poszerzyć zakresu ani pominąć receipts.
 
-### 5.5 Niezmienne artefakty
+### 5.6 Niezmienne artefakty
 
 Wiedza, strategie, tickety, plany, logi i receipts są częścią wykonania, a nie
 dodatkiem do czatu. Supervisor MUSI:
@@ -327,6 +380,27 @@ i nie uzyskuje szerszej władzy niż przyznana jego pozycji.
    naprawy potwierdza nowy przebieg i receipt, nie sam zielony test kodu.
 8. **Zakończ** — raportuj rezultat, pozostałe ryzyka i łańcuch dowodów. Nie
    raportuj „done” na podstawie samej odpowiedzi modelu.
+
+### Profil C2004
+
+Profil [c2004-refactoring.v1.json](docs/profiles/c2004-refactoring.v1.json)
+opisuje kontrolowany proces:
+
+```text
+discover → plan_refactor → apply_refactor → test
+         → deploy → runtime_readback
+         → flash (gdy żądany) → device_readback
+```
+
+Profil ma status `candidate`, dopóki jego intenty i operacje nie zostaną
+zarejestrowane i powiązane z nazwanymi connectorami. LLM może poprawić
+IntentIR, ale nie może wstawić dowolnej komendy, portu, URL-a ani ścieżki
+firmware.
+
+Flash jest osobnym skutkiem `hardware_write`. Wymaga dokładnego `device_uri`,
+referencji transportu, SHA-256 firmware, `plan_hash`, grantu i kontraktu
+recovery. Sukces wymaga odczytu tożsamości urządzenia i hasha firmware; sam kod
+wyjścia programu flashującego nie jest dowodem zakończenia.
 
 ## 7. Kiedy wolno naprawiać kod bezpośrednio
 
@@ -442,6 +516,10 @@ Brak dowodu oznacza stan w toku albo blokadę — nigdy sukces.
 
 ## 11. Źródła normatywne i operacyjne
 
+- [`docs/standard/manifest.v1.json`](docs/standard/manifest.v1.json) — wersja,
+  profile, digests i kontrakt kompatybilności wydania.
+- [`docs/standard/README.md`](docs/standard/README.md) — warstwy i lokalna
+  bramka conformance.
 - [`wellmanifest/llm`](https://github.com/wellmanifest/llm/tree/ee544f28bea9abd1e1758a8fea1328b0cd93ec96)
   — protokół Subactor-first, kolejność interfejsów i granice władzy LLM.
 - [`wellmanifest/poa`](https://github.com/wellmanifest/poa) — kontrakty procesów
