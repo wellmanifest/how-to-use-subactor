@@ -3,7 +3,7 @@
 - **ID**: ticket-010
 - **Owner**: agent:codex
 - **Status**: IN_PROGRESS
-- **Workflow state**: VALIDATION
+- **Workflow state**: PUBLICATION
 - **Created**: 2026-08-28
 
 ## Goal and scope

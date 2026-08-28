@@ -2,7 +2,7 @@
 
 - [ ] [`ticket-010`](project/ticket-010/README.md) — resolve repository identity
   from canonical Git origin and diagnose optional workspace-layout drift.
-  Status: `IN_PROGRESS / EDIT`; workstream: `integration`.
+  Status: `IN_PROGRESS / PUBLICATION`; workstream: `integration`.
 
 - [x] [`ticket-008`](project/ticket-008/README.md) — publish executable interface
   profiles, compatibility bindings and the bounded C2004 refactoring profile.
