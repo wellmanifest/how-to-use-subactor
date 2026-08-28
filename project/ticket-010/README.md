@@ -3,7 +3,7 @@
 - **ID**: ticket-010
 - **Owner**: agent:codex
 - **Status**: IN_PROGRESS
-- **Workflow state**: EDIT
+- **Workflow state**: VALIDATION
 - **Created**: 2026-08-28
 
 ## Goal and scope
@@ -24,6 +24,17 @@ a local `subactor/` directory.
   recoverable retirement rather than an unsafe rename.
 - [ ] AC-05: Unit, conformance and governance checks pass and the exact PR head
   receives independent approval.
+
+## Evidence
+
+- 9 repository/profile conformance tests pass.
+- The observed checkout resolves to `wellmanifest/how-to-use-subactor` while
+  the explicit workspace policy expects
+  `/home/tom/github/wellmanifest/how-to-use-subactor`; the stable finding is
+  `USAGE-REPOSITORY-PATH-001` and repair is blocked while linked worktrees
+  exist.
+- Profile conformance checks 3/3 artifacts and communication self-test checks
+  2 fixtures against 4 schemas without failures.
 
 ## Participants
 
