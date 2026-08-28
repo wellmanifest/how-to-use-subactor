@@ -46,7 +46,7 @@ Inspect the current repository without mutation:
 
 ```bash
 python3 docs/standard/conformance.py repository-identity \
-  --workspace-root /home/tom/github \
+  --workspace-root "$WORKSPACE_ROOT" \
   --expect-ref wellmanifest/how-to-use-subactor
 ```
 

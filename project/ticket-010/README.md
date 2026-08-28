@@ -30,7 +30,7 @@ a local `subactor/` directory.
 - 9 repository/profile conformance tests pass.
 - The observed checkout resolves to `wellmanifest/how-to-use-subactor` while
   the explicit workspace policy expects
-  `/home/tom/github/wellmanifest/how-to-use-subactor`; the stable finding is
+  `<workspace-root>/wellmanifest/how-to-use-subactor`; the stable finding is
   `USAGE-REPOSITORY-PATH-001` and repair is blocked while linked worktrees
   exist.
 - Profile conformance checks 3/3 artifacts and communication self-test checks
