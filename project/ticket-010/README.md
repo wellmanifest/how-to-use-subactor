@@ -2,8 +2,8 @@
 
 - **ID**: ticket-010
 - **Owner**: agent:codex
-- **Status**: IN_PROGRESS
-- **Workflow state**: PUBLICATION
+- **Status**: DONE
+- **Workflow state**: DONE
 - **Created**: 2026-08-28
 
 ## Goal and scope
@@ -22,8 +22,10 @@ a local `subactor/` directory.
 - [x] AC-03: Mismatched origin refs and paths emit stable, distinct findings.
 - [x] AC-04: Repair is read-only and requires clone, verification and
   recoverable retirement rather than an unsafe rename.
-- [ ] AC-05: Unit, conformance and governance checks pass and the exact PR head
-  receives independent approval.
+- [x] AC-05: Unit, conformance and governance checks passed; protected PR #16
+  received independent approval at exact head
+  `2b427004d0fc00e1b034b922f01605cfed09f290` and merged as
+  `262ef564585abcee27690fcdfebce95405942139`.
 
 ## Evidence
 
