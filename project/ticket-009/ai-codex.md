@@ -21,6 +21,8 @@ human/LLM usage without changing profile semantics.
 ## Actual changes
 
 - Recorded the dependent documentation slice and publication authorization.
+- Published the guide through exact-head independent validation and recorded
+  the protected merge receipt in a governance-only closure.
 
 ## Blockers
 

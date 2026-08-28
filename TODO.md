@@ -3,9 +3,10 @@
 - [x] [`ticket-008`](project/ticket-008/README.md) — publish executable interface
   profiles, compatibility bindings and the bounded C2004 refactoring profile.
   Status: `DONE / DONE`; workstream: `integration`.
-- [ ] [`ticket-009`](project/ticket-009/README.md) — publish the Founder CLI,
+- [x] [`ticket-009`](project/ticket-009/README.md) — publish the Founder CLI,
   Subactor Shell and C2004 profile selection guide. Status:
-  `IN_PROGRESS / EDIT`; workstream: `governance`.
+  `DONE / DONE`; workstream: `governance`; protected PR #14 merged after
+  exact-head Validator approval.
 - [x] [`ticket-007`](project/ticket-007/README.md) — publish the exact POA
   resource-binding guide release. Status: `DONE / DONE`; workstream:
   `governance`.
