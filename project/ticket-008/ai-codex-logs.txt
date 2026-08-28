@@ -1,0 +1,4 @@
+2026-08-28T14:03:00Z scope: user authorized implementation, tests and publication
+2026-08-28T14:04:07Z worktree-lease: lease-how-to-use-subactor-ticket-008-r1, fencing-token=1
+2026-08-28T14:12:00Z conformance: valid=true, artifacts=3, discovery=founder-cli+subactor-shell
+2026-08-28T14:12:00Z tests: 4 passed; communication schemas=4 valid; governance=GOV-PASS
