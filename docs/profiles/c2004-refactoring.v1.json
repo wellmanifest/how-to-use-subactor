@@ -1,0 +1,22 @@
+{
+  "schema": "wellmanifest.subactor-usage/project-profile/v1",
+  "id": "c2004-refactoring",
+  "version": 1,
+  "status": "candidate",
+  "projectRef": "project://maskservice/c2004",
+  "requiredInterfaces": ["founder-cli", "subactor-shell"],
+  "stages": [
+    {"id": "discover", "intentId": "c2004.discover", "operation": "repository.inspect", "effect": "observe", "authority": "observe", "requiredInputs": ["project_ref", "target_revision"], "requiredEvidence": ["repository_identity", "cleanliness_report", "capability_report"], "onFailure": "stop"},
+    {"id": "plan_refactor", "intentId": "c2004.refactor.plan", "operation": "repository.refactor.plan", "effect": "local_write", "authority": "plan", "requiredInputs": ["project_ref", "target_revision", "acceptance_contract"], "requiredEvidence": ["ticket", "intent_ir", "plan_hash", "affected_paths"], "onFailure": "replan"},
+    {"id": "apply_refactor", "intentId": "c2004.refactor.apply", "operation": "repository.refactor.apply", "effect": "local_write", "authority": "apply", "requiredInputs": ["ticket", "plan_hash", "change_lease"], "requiredEvidence": ["diff_receipt", "scope_readback"], "onFailure": "rollback"},
+    {"id": "test", "intentId": "c2004.test", "operation": "repository.test", "effect": "observe", "authority": "observe", "requiredInputs": ["ticket", "revision", "test_profile"], "requiredEvidence": ["test_receipt", "failure_summary"], "onFailure": "replan"},
+    {"id": "deploy", "intentId": "c2004.deploy", "operation": "deployment.apply", "effect": "external_write", "authority": "apply", "requiredInputs": ["ticket", "revision", "plan_hash", "deployment_target_ref", "grant_ref"], "requiredEvidence": ["deployment_receipt", "deployed_revision"], "onFailure": "rollback"},
+    {"id": "runtime_readback", "intentId": "c2004.runtime.readback", "operation": "runtime.query", "effect": "observe", "authority": "observe", "requiredInputs": ["deployment_target_ref", "deployed_revision"], "requiredEvidence": ["independent_http_readback", "c2004_eql_result"], "onFailure": "rollback"},
+    {"id": "flash", "intentId": "c2004.device.flash", "operation": "device.flash", "effect": "hardware_write", "authority": "apply", "requiredInputs": ["device_uri", "serial_or_ota_transport_ref", "firmware_sha256", "plan_hash", "grant_ref", "recovery_contract"], "requiredEvidence": ["device_identity_readback", "flash_receipt", "firmware_hash_readback"], "onFailure": "escalate"},
+    {"id": "device_readback", "intentId": "c2004.device.readback", "operation": "device.query", "effect": "observe", "authority": "observe", "requiredInputs": ["device_uri", "expected_firmware_sha256"], "requiredEvidence": ["network_reachability", "runtime_identity", "firmware_hash_readback", "c2004_device_eql_result"], "onFailure": "replan"}
+  ],
+  "completion": {
+    "requires": ["ticket", "exact_revision", "test_receipt", "execution_receipts", "independent_runtime_readback", "device_readback_when_flash_requested", "acceptance_eql"],
+    "forbids": ["llm_only_success", "dashboard_only_success", "unbound_flash_port", "unregistered_process", "secret_in_prompt", "direct_main_edit"]
+  }
+}

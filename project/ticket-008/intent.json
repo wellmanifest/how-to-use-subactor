@@ -1,0 +1,82 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-008",
+  "summary": "Refactor executable Subactor usage standard",
+  "workstream": "integration",
+  "classification": {
+    "kind": "FEATURE",
+    "priority": "P1",
+    "origin": "requested"
+  },
+  "allowedPaths": [
+    "VERSION",
+    "TODO.md",
+    "docs/standard/**",
+    "docs/profiles/**",
+    "project/TICKETS.md",
+    "project/ticket-008/**"
+  ],
+  "forbiddenPaths": ["project/ticket-*/user-*.md"],
+  "stacks": ["python", "documentation", "json-schema"],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "8787d197c363936d765997bb14b9be444bdd1b6f",
+    "targetBranch": "main",
+    "outcome": "Subactor usage is published as an executable standard with distinct interface profiles, runtime compatibility bindings and a bounded C2004 workflow",
+    "nonGoals": [
+      "Change Subactor runtime behavior in this ticket",
+      "Grant mutation authority through a profile or transport",
+      "Embed credentials, deployment ports or arbitrary shell commands",
+      "Claim runtime adoption without a separate adopter change"
+    ],
+    "complexity": "L",
+    "estimatedMinutes": 30,
+    "budgets": {
+      "maxImplementationFiles": 15,
+      "maxAffectedComponents": 5,
+      "maxPublicInterfaceChanges": 3,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Keep transport-neutral invariants normative and move deployment-specific command surfaces into closed versioned profiles validated against live CLI discovery",
+      "components": [
+        {"name": "standard-manifest", "paths": ["docs/standard/**"]},
+        {"name": "interface-profiles", "paths": ["docs/profiles/**"]},
+        {"name": "release-version", "paths": ["VERSION"]}
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [
+        "wellmanifest.subactor-usage/manifest/v1",
+        "wellmanifest.subactor-usage/interface-profile/v1",
+        "wellmanifest.subactor-usage/project-profile/v1"
+      ],
+      "dataChanges": [],
+      "ui": {"impact": "none", "states": [], "evidence": []},
+      "rollback": "Close the PR without merge; version 0.3.0 remains current"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-05",
+        "commands": [
+          "python3 docs/standard/conformance.py check",
+          "python3 docs/standard/conformance.py check --discover",
+          "python3 -m unittest docs/standard/conformance_test.py",
+          "python3 docs/communication/conformance.py self-test"
+        ],
+        "evidence": "deterministic JSON conformance receipts"
+      },
+      {
+        "criterion": "AC-06",
+        "commands": [
+          "./project/governance-check.sh --actor agent --base 8787d197c363936d765997bb14b9be444bdd1b6f",
+          "git diff --check 8787d197c363936d765997bb14b9be444bdd1b6f..HEAD"
+        ],
+        "evidence": "project/ticket-008/ai-codex-logs.txt"
+      }
+    ]
+  }
+}
