@@ -80,6 +80,7 @@ def inspect_repository_identity(
     *,
     remote_name: str = "origin",
     workspace_root: Path | None = None,
+    expected_host: str | None = None,
     expected_ref: str | None = None,
 ) -> dict[str, Any]:
     """Inspect identity without changing the checkout or any remote state."""
@@ -110,6 +111,13 @@ def inspect_repository_identity(
             "USAGE-REPOSITORY-REF-001",
             remote_name,
             f"remote resolves to {repository_ref}, expected {expected_ref}",
+        )
+    if expected_host and repository_host and repository_host != expected_host.lower():
+        add(
+            failures,
+            "USAGE-REPOSITORY-HOST-001",
+            remote_name,
+            f"remote resolves to {repository_host}, expected {expected_host.lower()}",
         )
     resolved_workspace_root = workspace_root.resolve() if workspace_root else None
     expected_path = (
@@ -321,6 +329,7 @@ def main() -> int:
     identity_parser.add_argument("--repository", type=Path, default=ROOT)
     identity_parser.add_argument("--remote", default="origin")
     identity_parser.add_argument("--workspace-root", type=Path)
+    identity_parser.add_argument("--expect-host")
     identity_parser.add_argument("--expect-ref")
     args = parser.parse_args()
     if args.command == "check":
@@ -330,6 +339,7 @@ def main() -> int:
             args.repository,
             remote_name=args.remote,
             workspace_root=args.workspace_root,
+            expected_host=args.expect_host,
             expected_ref=args.expect_ref,
         )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))

@@ -106,6 +106,22 @@ class ConformanceTest(unittest.TestCase):
             self.assertFalse(result["valid"])
             self.assertIn("USAGE-REPOSITORY-REF-001", {item["code"] for item in result["failures"]})
 
+    def test_expected_host_is_part_of_canonical_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            checkout = Path(temporary) / "checkout"
+            subprocess.run(["git", "init", "-q", str(checkout)], check=True)
+            subprocess.run(
+                ["git", "-C", str(checkout), "remote", "add", "origin", "git@example.invalid:wellmanifest/how-to-use-subactor.git"],
+                check=True,
+            )
+            result = conformance.inspect_repository_identity(
+                checkout,
+                expected_host="github.com",
+                expected_ref="wellmanifest/how-to-use-subactor",
+            )
+            self.assertFalse(result["valid"])
+            self.assertIn("USAGE-REPOSITORY-HOST-001", {item["code"] for item in result["failures"]})
+
     def test_linked_worktree_uses_primary_checkout_for_layout(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             workspace = Path(temporary)
@@ -120,6 +136,7 @@ class ConformanceTest(unittest.TestCase):
             result = conformance.inspect_repository_identity(
                 linked,
                 workspace_root=workspace,
+                expected_host="github.com",
                 expected_ref="wellmanifest/demo",
             )
             self.assertTrue(result["valid"], result["failures"])

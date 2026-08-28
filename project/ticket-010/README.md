@@ -27,7 +27,8 @@ a local `subactor/` directory.
 
 ## Evidence
 
-- 9 repository/profile conformance tests pass.
+- 10 repository/profile conformance tests pass, including host identity and
+  linked-worktree placement.
 - The observed checkout resolves to `wellmanifest/how-to-use-subactor` while
   the explicit workspace policy expects
   `<workspace-root>/wellmanifest/how-to-use-subactor`; the stable finding is

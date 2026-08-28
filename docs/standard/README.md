@@ -47,11 +47,13 @@ Inspect the current repository without mutation:
 ```bash
 python3 docs/standard/conformance.py repository-identity \
   --workspace-root "$WORKSPACE_ROOT" \
+  --expect-host github.com \
   --expect-ref wellmanifest/how-to-use-subactor
 ```
 
-`USAGE-REPOSITORY-REF-001` means the remote targets a different repository.
-Fix the remote only after independently verifying the intended repository.
+`USAGE-REPOSITORY-HOST-001` or `USAGE-REPOSITORY-REF-001` means the remote
+targets a different host or repository. Fix the remote only after
+independently verifying the intended repository.
 `USAGE-REPOSITORY-PATH-001` means Git identity is correct but the optional
 local layout policy differs, as with a `wellmanifest/*` checkout stored below
 a `subactor/` directory.

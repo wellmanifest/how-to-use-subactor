@@ -57,7 +57,7 @@
         "criterion": "AC-01",
         "commands": [
           "python3 -m unittest docs/standard/conformance_test.py",
-          "python3 docs/standard/conformance.py repository-identity --workspace-root \"$WORKSPACE_ROOT\" --expect-ref wellmanifest/how-to-use-subactor"
+          "python3 docs/standard/conformance.py repository-identity --workspace-root \"$WORKSPACE_ROOT\" --expect-host github.com --expect-ref wellmanifest/how-to-use-subactor"
         ],
         "evidence": "project/ticket-010/ai-codex-logs.txt"
       },
