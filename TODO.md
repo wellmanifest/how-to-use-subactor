@@ -1,8 +1,11 @@
 # TODO
 
-- [ ] [`ticket-008`](project/ticket-008/README.md) — publish executable interface
+- [x] [`ticket-008`](project/ticket-008/README.md) — publish executable interface
   profiles, compatibility bindings and the bounded C2004 refactoring profile.
-  Status: `IN_PROGRESS / EDIT`; workstream: `integration`.
+  Status: `DONE / DONE`; workstream: `integration`.
+- [ ] [`ticket-009`](project/ticket-009/README.md) — publish the Founder CLI,
+  Subactor Shell and C2004 profile selection guide. Status:
+  `IN_PROGRESS / EDIT`; workstream: `governance`.
 - [x] [`ticket-007`](project/ticket-007/README.md) — publish the exact POA
   resource-binding guide release. Status: `DONE / DONE`; workstream:
   `governance`.

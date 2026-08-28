@@ -1,0 +1,2 @@
+2026-08-28T14:24:04Z scope: dependent guide publication after PR 13 merge
+2026-08-28T14:24:04Z worktree lease: lease-how-to-use-subactor-ticket-009-r1 revision 1
