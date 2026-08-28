@@ -1,0 +1,76 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-010",
+  "summary": "Resolve repository identity from Git origin",
+  "workstream": "integration",
+  "classification": {
+    "kind": "FEATURE",
+    "priority": "P1",
+    "origin": "requested"
+  },
+  "allowedPaths": [
+    "docs/standard/README.md",
+    "docs/standard/conformance.py",
+    "docs/standard/conformance_test.py",
+    "project/ticket-010/**",
+    "TODO.md",
+    "project/TICKETS.md"
+  ],
+  "forbiddenPaths": ["project/ticket-*/user-*.md"],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "38369d4666a3f296ca44406a61050640955d421c",
+    "targetBranch": "main",
+    "outcome": "Agents resolve repository identity from the canonical Git remote, detect explicit workspace-layout drift and receive a safe non-mutating repair plan.",
+    "nonGoals": [
+      "Automatically move, rename or delete a checkout",
+      "Infer publication authority from a filesystem path",
+      "Print remote URLs which may embed credentials",
+      "Change Git remotes automatically"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 20,
+    "budgets": {
+      "maxImplementationFiles": 3,
+      "maxAffectedComponents": 1,
+      "maxPublicInterfaceChanges": 1,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Extend dependency-free conformance with a read-only repository identity inspection and optional explicit workspace-root placement check.",
+      "components": [
+        {"name": "usage-conformance", "paths": ["docs/standard/**"]}
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": ["wellmanifest.repository-identity/inspection/v1"],
+      "dataChanges": [],
+      "ui": {"impact": "none", "states": [], "evidence": []},
+      "rollback": "Revert the inspector and its documentation; existing profile conformance remains unchanged."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python3 -m unittest docs/standard/conformance_test.py",
+          "python3 docs/standard/conformance.py repository-identity --workspace-root \"$WORKSPACE_ROOT\" --expect-host github.com --expect-ref wellmanifest/how-to-use-subactor"
+        ],
+        "evidence": "project/ticket-010/ai-codex-logs.txt"
+      },
+      {
+        "criterion": "AC-05",
+        "commands": [
+          "python3 docs/standard/conformance.py check",
+          "python3 docs/communication/conformance.py self-test",
+          "./project/governance-check.sh --actor agent --base 38369d4666a3f296ca44406a61050640955d421c --head HEAD",
+          "git diff --check"
+        ],
+        "evidence": "exact-head validation receipt"
+      }
+    ]
+  }
+}

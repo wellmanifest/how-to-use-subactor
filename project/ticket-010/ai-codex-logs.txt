@@ -1,0 +1,4 @@
+2026-08-28T15:26:30Z SESSION_EXECUTION_AUTHORIZATION: diagnose, implement, test and publish requested by Founder.
+2026-08-28T15:34:41Z PASS: 10 unit tests, 3/3 usage artifacts and communication self-test with 0 failures.
+2026-08-28T15:32:31Z OBSERVED: origin resolves to wellmanifest/how-to-use-subactor; explicit workspace-root policy emits USAGE-REPOSITORY-PATH-001 and clone-verify-retire repair blockedBy=[linked_worktrees].
+2026-08-28T15:34:40Z PASS: live CLI discovery, communication self-test and managed governance gate with 0 errors and 0 warnings.

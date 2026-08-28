@@ -11,6 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -37,6 +38,145 @@ def exact_keys(document: dict[str, Any], required: set[str], optional: set[str] 
 
 def add(failures: list[dict[str, str]], code: str, path: str, message: str) -> None:
     failures.append({"code": code, "path": path, "message": message})
+
+
+def parse_repository_remote(remote_url: str) -> tuple[str, str]:
+    """Return a credential-free host and owner/repository reference."""
+    host = ""
+    remote_path = ""
+    if "://" in remote_url:
+        parsed = urlsplit(remote_url)
+        if parsed.scheme not in {"https", "http", "ssh", "git"} or not parsed.hostname:
+            raise ValueError("remote must use an authenticated network Git transport")
+        host = parsed.hostname.lower()
+        remote_path = parsed.path
+    else:
+        match = re.fullmatch(r"(?:[^@/:]+@)?([^/:]+):(.+)", remote_url)
+        if not match:
+            raise ValueError("remote must be an absolute network URL or SCP-style Git URL")
+        host, remote_path = match.groups()
+        host = host.lower()
+    repository_ref = remote_path.strip("/")
+    if repository_ref.endswith(".git"):
+        repository_ref = repository_ref[:-4]
+    segments = repository_ref.split("/")
+    if len(segments) < 2 or any(not segment or segment in {".", ".."} for segment in segments):
+        raise ValueError("remote path must contain an owner and repository")
+    return host, repository_ref
+
+
+def run_git(repository: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", "-C", str(repository), *arguments],
+        text=True,
+        capture_output=True,
+        timeout=15,
+        check=False,
+    )
+
+
+def inspect_repository_identity(
+    repository: Path,
+    *,
+    remote_name: str = "origin",
+    workspace_root: Path | None = None,
+    expected_host: str | None = None,
+    expected_ref: str | None = None,
+) -> dict[str, Any]:
+    """Inspect identity without changing the checkout or any remote state."""
+    failures: list[dict[str, str]] = []
+    requested_path = repository.resolve()
+    top_level_result = run_git(requested_path, "rev-parse", "--show-toplevel")
+    if top_level_result.returncode != 0:
+        add(failures, "USAGE-REPOSITORY-GIT-001", str(requested_path), "path is not a Git worktree")
+        return {
+            "schema": "wellmanifest.repository-identity/inspection/v1",
+            "valid": False,
+            "failures": failures,
+        }
+    checkout_path = Path(top_level_result.stdout.strip()).resolve()
+    remote_result = run_git(checkout_path, "remote", "get-url", remote_name)
+    repository_host: str | None = None
+    repository_ref: str | None = None
+    if remote_result.returncode != 0:
+        add(failures, "USAGE-REPOSITORY-REMOTE-001", remote_name, "canonical remote is missing")
+    else:
+        try:
+            repository_host, repository_ref = parse_repository_remote(remote_result.stdout.strip())
+        except ValueError as error:
+            add(failures, "USAGE-REPOSITORY-REMOTE-002", remote_name, str(error))
+    if expected_ref and repository_ref and repository_ref != expected_ref:
+        add(
+            failures,
+            "USAGE-REPOSITORY-REF-001",
+            remote_name,
+            f"remote resolves to {repository_ref}, expected {expected_ref}",
+        )
+    if expected_host and repository_host and repository_host != expected_host.lower():
+        add(
+            failures,
+            "USAGE-REPOSITORY-HOST-001",
+            remote_name,
+            f"remote resolves to {repository_host}, expected {expected_host.lower()}",
+        )
+    resolved_workspace_root = workspace_root.resolve() if workspace_root else None
+    expected_path = (
+        resolved_workspace_root.joinpath(*repository_ref.split("/"))
+        if resolved_workspace_root and repository_ref
+        else None
+    )
+    status_result = run_git(checkout_path, "status", "--porcelain=v1", "--untracked-files=all")
+    worktree_result = run_git(checkout_path, "worktree", "list", "--porcelain")
+    worktree_paths = [
+        Path(line.removeprefix("worktree ")).resolve()
+        for line in worktree_result.stdout.splitlines()
+        if line.startswith("worktree ")
+    ]
+    primary_checkout_path = worktree_paths[0] if worktree_paths else checkout_path
+    checkout_kind = "primary" if checkout_path == primary_checkout_path else "linked"
+    linked_worktree_count = (
+        len(worktree_paths)
+        if worktree_result.returncode == 0
+        else None
+    )
+    dirty = status_result.returncode != 0 or bool(status_result.stdout.strip())
+    placement_conformant = primary_checkout_path == expected_path if expected_path else None
+    if placement_conformant is False:
+        add(
+            failures,
+            "USAGE-REPOSITORY-PATH-001",
+            str(primary_checkout_path),
+            f"primary checkout path differs from origin-derived path {expected_path}",
+        )
+    repair_required = placement_conformant is False
+    repair_blockers = []
+    if dirty:
+        repair_blockers.append("dirty_checkout")
+    if linked_worktree_count is None or linked_worktree_count > 1:
+        repair_blockers.append("linked_worktrees")
+    return {
+        "schema": "wellmanifest.repository-identity/inspection/v1",
+        "valid": not failures,
+        "repositoryHost": repository_host,
+        "repositoryRef": repository_ref,
+        "remoteName": remote_name,
+        "checkoutPath": str(checkout_path),
+        "checkoutKind": checkout_kind,
+        "primaryCheckoutPath": str(primary_checkout_path),
+        "workspaceRoot": str(resolved_workspace_root) if resolved_workspace_root else None,
+        "expectedPath": str(expected_path) if expected_path else None,
+        "pathPolicyChecked": resolved_workspace_root is not None,
+        "placementConformant": placement_conformant,
+        "dirty": dirty,
+        "linkedWorktreeCount": linked_worktree_count,
+        "repair": {
+            "required": repair_required,
+            "mode": "clone-verify-retire",
+            "automaticMutation": False,
+            "blockedBy": repair_blockers if repair_required else [],
+        },
+        "failures": failures,
+    }
 
 
 def validate_interface(profile: dict[str, Any], path: str, failures: list[dict[str, str]]) -> None:
@@ -185,8 +325,23 @@ def main() -> int:
     subparsers = parser.add_subparsers(dest="command", required=True)
     check_parser = subparsers.add_parser("check")
     check_parser.add_argument("--discover", action="store_true")
+    identity_parser = subparsers.add_parser("repository-identity")
+    identity_parser.add_argument("--repository", type=Path, default=ROOT)
+    identity_parser.add_argument("--remote", default="origin")
+    identity_parser.add_argument("--workspace-root", type=Path)
+    identity_parser.add_argument("--expect-host")
+    identity_parser.add_argument("--expect-ref")
     args = parser.parse_args()
-    result = check(run_discovery=args.discover)
+    if args.command == "check":
+        result = check(run_discovery=args.discover)
+    else:
+        result = inspect_repository_identity(
+            args.repository,
+            remote_name=args.remote,
+            workspace_root=args.workspace_root,
+            expected_host=args.expect_host,
+            expected_ref=args.expect_ref,
+        )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0 if result["valid"] else 1
 

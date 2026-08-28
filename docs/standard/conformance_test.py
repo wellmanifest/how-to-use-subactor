@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import copy
 import importlib.util
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -46,6 +48,100 @@ class ConformanceTest(unittest.TestCase):
         failures: list[dict[str, str]] = []
         conformance.validate_project(broken, "fixture", failures)
         self.assertIn("USAGE-PROJECT-001", {item["code"] for item in failures})
+
+    def test_remote_url_variants_resolve_to_same_identity(self) -> None:
+        expected = ("github.com", "wellmanifest/how-to-use-subactor")
+        self.assertEqual(conformance.parse_repository_remote("git@github.com:wellmanifest/how-to-use-subactor.git"), expected)
+        self.assertEqual(conformance.parse_repository_remote("https://github.com/wellmanifest/how-to-use-subactor.git"), expected)
+        self.assertEqual(conformance.parse_repository_remote("ssh://git@github.com/wellmanifest/how-to-use-subactor.git"), expected)
+
+    def test_local_path_is_not_repository_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            checkout = workspace / "subactor" / "how-to-use-subactor"
+            checkout.mkdir(parents=True)
+            subprocess.run(["git", "init", "-q", str(checkout)], check=True)
+            subprocess.run(
+                ["git", "-C", str(checkout), "remote", "add", "origin", "git@github.com:wellmanifest/how-to-use-subactor.git"],
+                check=True,
+            )
+            result = conformance.inspect_repository_identity(
+                checkout,
+                workspace_root=workspace,
+                expected_ref="wellmanifest/how-to-use-subactor",
+            )
+            self.assertFalse(result["valid"])
+            self.assertEqual(result["repositoryRef"], "wellmanifest/how-to-use-subactor")
+            self.assertEqual(result["expectedPath"], str(workspace / "wellmanifest" / "how-to-use-subactor"))
+            self.assertIn("USAGE-REPOSITORY-PATH-001", {item["code"] for item in result["failures"]})
+
+    def test_arbitrary_checkout_path_is_valid_without_layout_policy(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            checkout = Path(temporary) / "arbitrary-name"
+            subprocess.run(["git", "init", "-q", str(checkout)], check=True)
+            subprocess.run(
+                ["git", "-C", str(checkout), "remote", "add", "origin", "https://github.com/wellmanifest/how-to-use-subactor.git"],
+                check=True,
+            )
+            result = conformance.inspect_repository_identity(
+                checkout,
+                expected_ref="wellmanifest/how-to-use-subactor",
+            )
+            self.assertTrue(result["valid"], result["failures"])
+            self.assertFalse(result["pathPolicyChecked"])
+            self.assertIsNone(result["placementConformant"])
+
+    def test_expected_repository_ref_is_checked_independently_of_path(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            checkout = Path(temporary) / "checkout"
+            subprocess.run(["git", "init", "-q", str(checkout)], check=True)
+            subprocess.run(
+                ["git", "-C", str(checkout), "remote", "add", "origin", "git@github.com:subactor/how-to-use-subactor.git"],
+                check=True,
+            )
+            result = conformance.inspect_repository_identity(
+                checkout,
+                expected_ref="wellmanifest/how-to-use-subactor",
+            )
+            self.assertFalse(result["valid"])
+            self.assertIn("USAGE-REPOSITORY-REF-001", {item["code"] for item in result["failures"]})
+
+    def test_expected_host_is_part_of_canonical_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            checkout = Path(temporary) / "checkout"
+            subprocess.run(["git", "init", "-q", str(checkout)], check=True)
+            subprocess.run(
+                ["git", "-C", str(checkout), "remote", "add", "origin", "git@example.invalid:wellmanifest/how-to-use-subactor.git"],
+                check=True,
+            )
+            result = conformance.inspect_repository_identity(
+                checkout,
+                expected_host="github.com",
+                expected_ref="wellmanifest/how-to-use-subactor",
+            )
+            self.assertFalse(result["valid"])
+            self.assertIn("USAGE-REPOSITORY-HOST-001", {item["code"] for item in result["failures"]})
+
+    def test_linked_worktree_uses_primary_checkout_for_layout(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            primary = workspace / "wellmanifest" / "demo"
+            linked = workspace / ".worktrees" / "demo--ticket-001"
+            subprocess.run(["git", "init", "-q", str(primary)], check=True)
+            subprocess.run(["git", "-C", str(primary), "config", "user.email", "test@example.invalid"], check=True)
+            subprocess.run(["git", "-C", str(primary), "config", "user.name", "Test"], check=True)
+            subprocess.run(["git", "-C", str(primary), "commit", "--allow-empty", "-qm", "seed"], check=True)
+            subprocess.run(["git", "-C", str(primary), "remote", "add", "origin", "git@github.com:wellmanifest/demo.git"], check=True)
+            subprocess.run(["git", "-C", str(primary), "worktree", "add", "-qb", "ticket/001", str(linked)], check=True)
+            result = conformance.inspect_repository_identity(
+                linked,
+                workspace_root=workspace,
+                expected_host="github.com",
+                expected_ref="wellmanifest/demo",
+            )
+            self.assertTrue(result["valid"], result["failures"])
+            self.assertEqual(result["checkoutKind"], "linked")
+            self.assertEqual(result["primaryCheckoutPath"], str(primary))
 
 
 if __name__ == "__main__":

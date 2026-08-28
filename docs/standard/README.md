@@ -29,3 +29,40 @@ python3 docs/communication/conformance.py self-test
 The first command checks the closed local contracts and digests. `--discover`
 also compares command catalogs with installed read-only CLI help. It does not
 create tickets, plans, grants or external effects.
+
+## Repository identity and checkout placement
+
+A directory name is never a repository identity. Resolve these values in this
+order:
+
+1. `repositoryRef` comes from the canonical Git remote, normally `origin`, and
+   has the form `owner/repository`.
+2. `checkoutPath` is only the current physical location and may be arbitrary.
+3. `workspaceRoot` is an explicit local layout policy. When supplied, the
+   expected primary checkout is `<workspaceRoot>/<owner>/<repository>`;
+   linked ticket worktrees may remain below `.worktrees`.
+
+Inspect the current repository without mutation:
+
+```bash
+python3 docs/standard/conformance.py repository-identity \
+  --workspace-root "$WORKSPACE_ROOT" \
+  --expect-host github.com \
+  --expect-ref wellmanifest/how-to-use-subactor
+```
+
+`USAGE-REPOSITORY-HOST-001` or `USAGE-REPOSITORY-REF-001` means the remote
+targets a different host or repository. Fix the remote only after
+independently verifying the intended repository.
+`USAGE-REPOSITORY-PATH-001` means Git identity is correct but the optional
+local layout policy differs, as with a `wellmanifest/*` checkout stored below
+a `subactor/` directory.
+
+Path repair is deliberately not automatic. Use `clone-verify-retire`: require
+a clean source checkout, inventory linked worktrees and unpushed refs, clone
+the canonical remote into the origin-derived expected path, compare the
+required refs and tests, then retire the old checkout through a recoverable
+move. Never rename a primary checkout while linked worktrees still contain
+absolute gitdir pointers. Tools and agents MUST continue to key leases,
+publication and repository API calls by `repositoryRef`, even before physical
+placement is repaired.
