@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.1 - 2026-08-29
+
+- Documented Founder autonomy delegation CLI: `subactor auto [1h|30m|status|run|revoke]`
+  and alias `subactor delegate`.
+- Documented `subactor chat` versus `subactor founder`, DOQL normalization and
+  deterministic phrase routing on the observed Control deployment.
+- Documented SubLLM ordered candidate routes and connectivity-only failover.
+- Updated `founder-cli` discovery catalog and manifest digests for release 0.5.1.
+
 ## 0.5.0 - 2026-08-28
 
 - Documented the two live execution planes: Founder Control tickets versus a

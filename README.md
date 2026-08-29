@@ -2,9 +2,9 @@
 {
   "schema": "wellmanifest.guide/v1",
   "id": "how-to-use-subactor",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "status": "current",
-  "updated": "2026-08-28",
+  "updated": "2026-08-29",
   "home": "wellmanifest",
   "shape": "domain_pack",
   "runtime_owner": "subactor"
@@ -17,7 +17,12 @@ Normatywny przewodnik dla człowieka i LLM-a nadzorującego realizację zadań
 przez Subactor za pomocą CLI/shell, REST API, interfejsu webowego, MCP i
 wersjonowanych artefaktów.
 
-Wydanie `0.5.0` rozdziela niezmienne reguły od powierzchni wykonawczych.
+Wydanie `0.5.1` rozszerza przewodnik o bezpośrednie komendy delegacji autonomii
+Foundera (`subactor auto` / `delegate`), zachowanie rozmowy `subactor chat` z
+typowanym DOQL oraz politykę kandydatów SubLLM z failoverem przy błędach
+łączności providera.
+
+Wydanie `0.5.0` rozdzieliło niezmienne reguły od powierzchni wykonawczych.
 Kanoniczny [manifest standardu](docs/standard/manifest.v1.json) wiąże profile
 przez SHA-256, a profile [Founder CLI](docs/profiles/founder-cli.v1.json),
 [Subactor Shell](docs/profiles/subactor-shell.v1.json),
@@ -191,9 +196,14 @@ Supervisor POWINIEN rozdzielać poziomy:
    autonomii, bez ponownego pytania człowieka o ten konkretny plan.
 
 SubLLM nie wydaje takiego prawa. `subactor/subllm` jest biblioteką polityki i
-routingu modelu/providerów oraz wywołań POA. Model może proponować intencję lub
-plan, ale jego odpowiedź jest advisory. Autorytet mutacji pochodzi z polityk i
-grantów Subactora, nie z nazwy modelu, promptu ani poświadczenia providera.
+routingu modeli/providerów oraz wywołań POA. Trasa LLM deklaruje uporządkowaną
+listę kandydatów (np. Direct Z.AI, OpenRouter, Cursor SDK); konsument przechodzi
+do kolejnego kandydata wyłącznie przy ograniczonym błędzie łączności lub
+providera, a nie dlatego, że odpowiedź modelu była niezadowalająca. Jawny
+`--model` przypina dokładny model; brak wyboru zachowuje router opóźnień i
+failover z polityki. Model może proponować intencję lub plan, ale jego odpowiedź
+jest advisory. Autorytet mutacji pochodzi z polityk i grantów Subactora, nie z
+nazwy modelu, promptu ani poświadczenia providera.
 
 ### 4.1 Ograniczona autonomia kontraktowa
 
@@ -296,8 +306,15 @@ wdrożenia, service discovery albo wartości `SUBACTOR_*_URL`.
 Shell supervisora służy do rozmowy z Subactorem i obserwacji systemu:
 
 ```bash
-# Interaktywna sesja Foundera z HITL
+# Interaktywna sesja Foundera z HITL (chat + DOQL)
 subactor chat
+
+# Delegacja autonomii Foundera (mutate lease) i kontroler kolejki
+subactor auto                      # wydaj 1h grant (3600s) na odwracalne operacje i przyspiesz cykl
+subactor auto 30m                  # wydaj 30-minutowy grant (1800s)
+subactor auto run                  # wymuś natychmiastowy cykl kolejki autonomicznej
+subactor auto status               # odczytaj stan aktywnej sesji autonomii i pozostały czas
+subactor auto revoke               # wycofaj sesję delegacji przed upływem czasu
 
 # Ograniczona rozmowa Founder -> typowane DOQL; brak interpretacji fail-closed
 subactor founder "pokaż blokady aktywnych procesów" --json
@@ -332,6 +349,21 @@ go z kluczami idempotentnymi tylko wtedy, gdy każdy krok mieści się w zakresi
 Przed jego użyciem obowiązuje sekwencja z sekcji 4.1 i 4.2: preflight gotowości,
 odczyt granic kontraktu, dopiero potem zlecenie. Brak ważnego kontraktu nie
 uprawnia do podmiany trybu na `--apply`.
+
+#### Chat, founder i DOQL
+
+`subactor chat` prowadzi interaktywną sesję Foundera z HITL; odpowiedzi są
+typowane (m.in. status pracy, blokady, zadania) i pochodzą z ograniczonej
+powierzchni Control, nie z dowolnego completionu LLM. `subactor founder "<pytanie>"`
+to jednorazowe zapytanie z trybem `require-llm`: Control musi zinterpretować je
+do DOQL — brak poprawnej interpretacji kończy żądanie bez wykonania (fail-closed).
+
+Na zaobserwowanym wdrożeniu 2026-08-29 bramka LLM czasem zwracała DOQL w wersji 1;
+Control normalizuje taki wynik do wersji 2 zamiast odrzucać go jako
+`dependency.unavailable`. Dla udokumentowanych fraz (np. „lista zadań dla foundera”)
+obowiązuje też deterministyczne mapowanie na przykłady z ContextDSL, gdy
+interpretacja LLM zwróci pusty odczyt. Błędy chatu preferują polski `data.summary`
+z Control zamiast generycznego komunikatu problemu transportowego.
 
 `subactor tickets` listuje tickety **Control / Planfile organizacyjnego**, nie
 kolejki `.planfile/` w repozytorium projektu. Na zaobserwowanym wdrożeniu
