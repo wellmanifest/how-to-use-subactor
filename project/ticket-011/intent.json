@@ -1,0 +1,121 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-011",
+  "summary": "Bind bounded autonomous contract execution into the usage standard",
+  "workstream": "integration",
+  "classification": {
+    "kind": "FEATURE",
+    "priority": "P1",
+    "origin": "health"
+  },
+  "allowedPaths": [
+    "VERSION",
+    "TODO.md",
+    "docs/communication/**",
+    "docs/standard/**",
+    "docs/profiles/**",
+    "project/TICKETS.md",
+    "project/ticket-011/**"
+  ],
+  "forbiddenPaths": ["project/ticket-*/user-*.md"],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "41a0e4bb91e563a0a3eabd666fd5586edb41d7ad",
+    "targetBranch": "main",
+    "outcome": "A supervisor can express, validate and prove contract-bound autonomous execution, and the standard rejects an expired contract or a missing bounded-autonomy preflight instead of failing closed on the mode itself.",
+    "nonGoals": [
+      "Grant an autonomy contract wider power than a plan-bound apply",
+      "Replace the exact per-process grant binding in runtime-event v2",
+      "Allow a standing contract to authorize a hardware write",
+      "Repair the runtime defects owned by subactor/platform",
+      "Rewrite the governance-owned narrative sections of the root README"
+    ],
+    "complexity": "L",
+    "estimatedMinutes": 30,
+    "budgets": {
+      "maxImplementationFiles": 15,
+      "maxAffectedComponents": 4,
+      "maxPublicInterfaceChanges": 3,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Model autonomous execution as a bounded pre-authorization that requires a verified contract and an observed readiness preflight, validated semantically rather than by transport shape alone.",
+      "components": [
+        {"name": "communication-contract", "paths": ["docs/communication/**"]},
+        {"name": "usage-standard", "paths": ["docs/standard/**"]},
+        {"name": "interface-profiles", "paths": ["docs/profiles/**"]},
+        {"name": "release-metadata", "paths": ["VERSION"]}
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [
+        "wellmanifest.subactor-communication/delegation-envelope/v1",
+        "wellmanifest.subactor-usage/interface-profile/v1",
+        "wellmanifest.subactor-usage/project-profile/v1"
+      ],
+      "dataChanges": [],
+      "ui": {"impact": "none", "states": [], "evidence": []},
+      "rollback": "Revert the authority enum, conformance branches, profiles and manifest digests to release 0.4.0; the four historical authority levels are unchanged by this ticket."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python3 docs/communication/conformance.py self-test"
+        ],
+        "evidence": "project/ticket-011/ai-cursor-logs.txt"
+      },
+      {
+        "criterion": "AC-02",
+        "commands": [
+          "python3 docs/communication/conformance.py self-test"
+        ],
+        "evidence": "fixture expired-autonomy-contract-declared-in-bounds expects COMM-CONTRACT-001"
+      },
+      {
+        "criterion": "AC-03",
+        "commands": [
+          "python3 docs/communication/conformance.py self-test"
+        ],
+        "evidence": "fixture unattended-autonomy-without-readiness-or-contract expects COMM-READINESS-001"
+      },
+      {
+        "criterion": "AC-04",
+        "commands": [
+          "python3 -m unittest docs.standard.conformance_test",
+          "python3 docs/standard/conformance.py check --discover"
+        ],
+        "evidence": "project/ticket-011/ai-cursor-logs.txt"
+      },
+      {
+        "criterion": "AC-05",
+        "commands": [
+          "python3 docs/standard/conformance.py check"
+        ],
+        "evidence": "docs/profiles/project-development.v1.json"
+      },
+      {
+        "criterion": "AC-06",
+        "commands": [
+          "python3 docs/communication/conformance.py self-test",
+          "python3 docs/standard/conformance.py check",
+          "python3 -m unittest docs.standard.conformance_test"
+        ],
+        "evidence": "project/ticket-011/ai-cursor-logs.txt"
+      },
+      {
+        "criterion": "AC-07",
+        "commands": [
+          "python3 docs/standard/conformance.py check",
+          "./project/governance-check.sh --actor agent --base 41a0e4bb91e563a0a3eabd666fd5586edb41d7ad --head HEAD",
+          "git diff --check"
+        ],
+        "evidence": "exact-head validation receipt"
+      }
+    ]
+  }
+}
