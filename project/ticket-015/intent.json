@@ -1,0 +1,63 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-015",
+  "summary": "Publish founder-cli auto command in usage profile 0.5.1",
+  "workstream": "integration",
+  "classification": {
+    "kind": "SERVICE",
+    "priority": "P2",
+    "origin": "health"
+  },
+  "allowedPaths": [
+    "VERSION",
+    "docs/profiles/founder-cli.v1.json",
+    "docs/standard/manifest.v1.json",
+    "project/ticket-015/**",
+    "project/TICKETS.md"
+  ],
+  "forbiddenPaths": ["project/ticket-*/user-*.md"],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "54c1bacadc8bd701bde84f0d75c04036c9f004d8",
+    "targetBranch": "main",
+    "outcome": "Release 0.5.1 binds the observed subactor auto command in the founder-cli interface profile and refreshes manifest digests.",
+    "nonGoals": [
+      "Rewrite governance-owned narrative sections of the root README"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 15,
+    "budgets": {
+      "maxImplementationFiles": 4,
+      "maxAffectedComponents": 2,
+      "maxPublicInterfaceChanges": 1,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Patch the founder-cli discovery catalog for auto and bump the manifest to 0.5.1 with refreshed SHA-256 digests.",
+      "components": [
+        {"name": "interface-profiles", "paths": ["docs/profiles/founder-cli.v1.json"]},
+        {"name": "release-metadata", "paths": ["VERSION", "docs/standard/manifest.v1.json"]}
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {"impact": "none", "states": [], "evidence": []},
+      "rollback": "Revert founder-cli discovery and manifest digests to release 0.5.0."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python3 docs/standard/conformance.py check",
+          "python3 -m unittest docs.standard.conformance_test"
+        ],
+        "evidence": "project/ticket-015/ai-cursor-logs.txt"
+      }
+    ]
+  }
+}
