@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.5.0 - 2026-08-28
+
+- Documented the two live execution planes: Founder Control tickets versus a
+  project's Koru/Planfile queue. `subactor tickets` is not the project queue.
+- Documented the observed Koru MCP catalog (`koru_list_tickets`,
+  `koru_run_ticket`) and that `waiting_input` + `executor=human` makes the IDE
+  session the named executor, not a bypass.
+- Documented that publication follows the target repository `AGENTS.md`:
+  wellmanifest/subactor use PR + Validator freeze; `maskservice/c2004` commits
+  on `main`. The candidate C2004 profile's `direct_main_edit` forbid is not the
+  live project rule.
+- Recorded a later 2026-08-28 Shell `doctor` observation: Control can be `OK`
+  while Vault HTTP and the MCP boundary still fail independently.
+- Added `autonomous` as a fifth authority level, modelled as a bounded
+  pre-authorization that still requires a plan hash, verified contract bounds
+  and the exact per-process grant binding rather than replacing it.
+- Rejected an expired or exhausted autonomy contract independently of the status
+  a registry reports, and required a contract bounds readback as completion
+  evidence.
+- Required a bounded-autonomy readiness preflight before delegating apply-class
+  work, and documented how to read the observed safety posture.
+- Documented the mutually exclusive `--autonomous` execution flag, the Subactor
+  Shell configuration bootstrap and the fact that the endpoint catalog is
+  partial in both directions.
+- Published a candidate project-development profile which keeps repository
+  increments contract-executable while publication stays at `apply` with trusted
+  exact-head approval.
+- Kept hardware writes outside standing contracts.
+
 ## 0.4.0 - 2026-08-28
 
 - Split the Platform Founder CLI and persistent Subactor Shell into distinct,
