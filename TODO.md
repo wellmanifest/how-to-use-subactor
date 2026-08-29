@@ -1,8 +1,9 @@
 # TODO
 
-- [ ] [`ticket-011`](project/ticket-011/README.md) — bind bounded autonomous
+- [x] [`ticket-011`](project/ticket-011/README.md) — bind bounded autonomous
   contract execution, readiness preflight and project development into the
-  executable standard. Status: `IN_PROGRESS / EDIT`; workstream: `integration`.
+  executable standard. Status: `DONE / DONE`; workstream: `integration`;
+  merged to protected `main` at `4342ec2f28e18eeb6c1b4d10127417964be39a84`.
 
 - [x] [`ticket-010`](project/ticket-010/README.md) — resolve repository identity
   from canonical Git origin and diagnose optional workspace-layout drift.
