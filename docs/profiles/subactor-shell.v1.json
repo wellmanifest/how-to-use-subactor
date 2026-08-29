@@ -11,7 +11,7 @@
   },
   "discovery": {
     "argv": ["subactor-shell", "--help"],
-    "expectedCommands": ["init", "chat", "one", "data", "vault", "sessions", "export", "plans", "status", "tickets", "health", "dispatch", "uri", "api", "get", "post", "endpoints", "receipts", "metrics", "catalog", "connectors", "doctor", "acp-agent"]
+    "expectedCommands": ["init", "chat", "one", "data", "vault", "sessions", "export", "plans", "status", "tickets", "orgs", "projects", "health", "dispatch", "uri", "api", "get", "post", "endpoints", "receipts", "metrics", "catalog", "connectors", "doctor", "acp-agent"]
   },
   "operations": [
     {"id": "shell.doctor", "command": "doctor", "effect": "observe", "authority": "observe", "requiredEvidence": ["diagnostic_receipt"]},

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.2 - 2026-08-29
+
+- Documented `subactor-shell orgs` and `subactor-shell projects [--recon]` for
+  organization registries and project portfolio/reconciliation views.
+- Updated `subactor-shell` discovery catalog and manifest digest for release 0.5.2.
+
 ## 0.5.1 - 2026-08-29
 
 - Documented Founder autonomy delegation CLI: `subactor auto [1h|30m|status|run|revoke]`

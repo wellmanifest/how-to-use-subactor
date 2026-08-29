@@ -1,0 +1,76 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-016",
+  "summary": "Release 0.5.2 shell orgs/projects catalog",
+  "workstream": "documentation",
+  "classification": {
+    "kind": "SERVICE",
+    "priority": "P2",
+    "origin": "health"
+  },
+  "allowedPaths": [
+    "README.md",
+    "CHANGELOG.md",
+    "VERSION",
+    "docs/profiles/subactor-shell.v1.json",
+    "docs/standard/manifest.v1.json",
+    "project/ticket-016/**",
+    "project/TICKETS.md",
+    "TODO.md"
+  ],
+  "forbiddenPaths": ["project/ticket-*/user-*.md"],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "2f67fba34132d8ab757146c95c90186459a01d28",
+    "targetBranch": "main",
+    "outcome": "Release 0.5.2 documents subactor-shell orgs and projects commands and keeps conformance profiles aligned with the shell CLI.",
+    "nonGoals": [
+      "Change founder-cli chat behavior",
+      "Document billing or CI spend remediation"
+    ],
+    "complexity": "XS",
+    "estimatedMinutes": 10,
+    "budgets": {
+      "maxImplementationFiles": 5,
+      "maxAffectedComponents": 1,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Bump the guide version and extend the subactor-shell profile expectedCommands for orgs/projects navigation.",
+      "components": [
+        {
+          "name": "subactor-shell-profile",
+          "paths": [
+            "docs/profiles/subactor-shell.v1.json",
+            "docs/standard/manifest.v1.json"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert to release 0.5.1 profile digests and narrative."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python3 docs/standard/conformance.py check --discover",
+          "./project/governance-check.sh --actor agent --base 2f67fba34132d8ab757146c95c90186459a01d28 --head HEAD"
+        ],
+        "evidence": "project/ticket-016/ai-cursor-logs.txt"
+      }
+    ]
+  }
+}

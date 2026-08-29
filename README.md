@@ -446,6 +446,10 @@ Typowa obserwacja i planowanie:
 ```bash
 subactor-shell status --json
 subactor-shell tickets --open --project c2004 --json
+subactor-shell orgs
+subactor-shell orgs organizations
+subactor-shell projects
+subactor-shell projects --recon
 subactor-shell plans list
 subactor-shell receipts list
 ```
