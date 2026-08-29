@@ -1,0 +1,72 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-012",
+  "summary": "Document bounded autonomous operation and interface bootstrap in the guide",
+  "workstream": "governance",
+  "classification": {
+    "kind": "FEATURE",
+    "priority": "P1",
+    "origin": "health"
+  },
+  "allowedPaths": [
+    "README.md",
+    "CHANGELOG.md",
+    "project/TICKETS.md",
+    "project/ticket-012/**"
+  ],
+  "forbiddenPaths": ["project/ticket-*/user-*.md"],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "4342ec2f28e18eeb6c1b4d10127417964be39a84",
+    "targetBranch": "main",
+    "outcome": "A supervisor reading the guide can run bounded autonomous work end to end: check readiness, verify contract bounds, choose the right flag, bootstrap the Shell and treat the endpoint catalog as partial.",
+    "nonGoals": [
+      "Change any machine-checkable contract, schema or profile",
+      "Describe an interface surface that was not observed on a live deployment",
+      "Copy a deployment address or port as a durable contract",
+      "Repair the runtime defects owned by subactor/platform"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 25,
+    "budgets": {
+      "maxImplementationFiles": 5,
+      "maxAffectedComponents": 2,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Extend the narrative guide with the fifth authority level, a readiness preflight step in the supervisor loop, an accurate Shell bootstrap and an explicit warning that endpoint discovery is partial.",
+      "components": [
+        {"name": "supervisor-guide", "paths": ["README.md"]},
+        {"name": "release-notes", "paths": ["CHANGELOG.md"]}
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {"impact": "none", "states": [], "evidence": []},
+      "rollback": "Revert the guide sections to release 0.4.0 prose; the executable contracts delivered by ticket-011 remain valid on their own."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python3 docs/standard/conformance.py check"
+        ],
+        "evidence": "manifest version and VERSION agree with the documented release"
+      },
+      {
+        "criterion": "AC-02",
+        "commands": [
+          "./project/governance-check.sh",
+          "git diff --check"
+        ],
+        "evidence": "project/ticket-012/ai-cursor-logs.txt"
+      }
+    ]
+  }
+}
