@@ -1,7 +1,7 @@
 {
   "schema": "wellmanifest.subactor-usage/manifest/v1",
   "id": "how-to-use-subactor",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "status": "current",
   "home": "wellmanifest",
   "shape": "domain_pack",
@@ -15,7 +15,7 @@
       "kind": "interface-profile",
       "id": "founder-cli",
       "path": "docs/profiles/founder-cli.v1.json",
-      "sha256": "5ab73a57c30f83b45d108e4db4e8a8fc9a68072b9081c1c4e567f056e76d8a1d"
+      "sha256": "5a23754bac7cea2183faabcff0e8cdb82845276d3f66ffceb5e9dbeac89a0ba3"
     },
     {
       "kind": "interface-profile",

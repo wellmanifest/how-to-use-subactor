@@ -7,11 +7,11 @@
   "runtime": {
     "repository": "subactor/platform",
     "revision": "b7363ead298f5ef3740dc1ce34712e13d80acdc5",
-    "observedVersion": "unversioned-cli@2026-08-28"
+    "observedVersion": "unversioned-cli@2026-08-29"
   },
   "discovery": {
     "argv": ["subactor", "help"],
-    "expectedCommands": ["login", "chat", "ask", "founder", "tickets", "plans", "status", "watch", "dispatch", "reality", "uri", "health", "endpoints", "get", "post", "api"]
+    "expectedCommands": ["login", "chat", "ask", "founder", "tickets", "plans", "status", "auto", "watch", "dispatch", "reality", "uri", "health", "endpoints", "get", "post", "api"]
   },
   "operations": [
     {"id": "system.health", "command": "health", "effect": "observe", "authority": "observe", "requiredEvidence": ["health_response"]},
