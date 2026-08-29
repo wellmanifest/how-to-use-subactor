@@ -2,8 +2,8 @@
 
 - **ID**: ticket-011
 - **Owner**: unresolved:human
-- **Status**: IN_PROGRESS
-- **Workflow state**: EDIT
+- **Status**: DONE
+- **Workflow state**: DONE
 - **Created**: 2026-08-28
 
 ## Goal and scope
@@ -58,20 +58,22 @@ subactor health    -> safety.mode=production_apply, safe=false,
 
 ## Acceptance criteria
 
-- [ ] AC-01: `authority.mode` admits `autonomous`, and a delegation in that
+- [x] AC-01: `authority.mode` admits `autonomous`, and a delegation in that
       mode requires a `contractRef`, a `planHash` and verified contract bounds.
-- [ ] AC-02: An autonomous delegation whose contract is expired, exhausted or
+- [x] AC-02: An autonomous delegation whose contract is expired, exhausted or
       out of bounds produces a stable finding instead of validating.
-- [ ] AC-03: An autonomous delegation that skips the readiness preflight, or
+- [x] AC-03: An autonomous delegation that skips the readiness preflight, or
       declares `boundedAutonomyReady` false, produces a stable finding.
-- [ ] AC-04: `founder-cli` declares the `--autonomous` operation, and profile
+- [x] AC-04: `founder-cli` declares the `--autonomous` operation, and profile
       conformance requires contract evidence for that authority level.
-- [ ] AC-05: A project profile describes autonomous project development through
+- [x] AC-05: A project profile describes autonomous project development through
       the `coding-agent` executor without embedding commands or secrets.
-- [ ] AC-06: `docs/communication/conformance.py self-test` and
+- [x] AC-06: `docs/communication/conformance.py self-test` and
       `docs/standard/conformance.py check` both pass, with positive and
       adversarial fixtures covering every new finding code.
-- [ ] AC-07: Manifest digests, `VERSION` and the manifest version agree.
+- [x] AC-07: Manifest digests, `VERSION` and the manifest version agree; merged
+      to protected `main` at `4342ec2f28e18eeb6c1b4d10127417964be39a84` after
+      exact-head governance checks on feature head `01b036a`.
 
 ## Participants
 

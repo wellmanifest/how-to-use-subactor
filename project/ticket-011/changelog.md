@@ -1,5 +1,10 @@
 # Ticket 011 changelog
 
+## 2026-08-29
+
+- Closed the lifecycle after the integration slice merged to protected `main`
+  at `4342ec2f28e18eeb6c1b4d10127417964be39a84`.
+
 ## 2026-08-28
 
 - Admitted `autonomous` as a fifth `authority.mode` in the delegation envelope,

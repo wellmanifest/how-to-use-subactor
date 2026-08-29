@@ -20,3 +20,5 @@ GOV-PASS: passed (0 errors, 0 warnings)
 
 $ git diff --check
 (no whitespace errors)
+
+2026-08-29T13:48:00Z MERGED: integration slice merged to protected main at 4342ec2f28e18eeb6c1b4d10127417964be39a84 (feature head 01b036a).
