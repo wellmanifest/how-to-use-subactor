@@ -207,11 +207,15 @@ def validate_interface(profile: dict[str, Any], path: str, failures: list[dict[s
         if operation["command"] not in expected:
             add(failures, "USAGE-DISCOVERY-002", operation_path, "operation command is absent from discovery catalog")
         if operation["effect"] == "external_write":
-            if operation["authority"] != "apply":
-                add(failures, "USAGE-AUTHORITY-001", operation_path, "external write requires apply authority")
+            if operation["authority"] not in {"apply", "autonomous"}:
+                add(failures, "USAGE-AUTHORITY-001", operation_path, "external write requires apply or autonomous authority")
             evidence = set(operation["requiredEvidence"])
             if not {"plan_hash", "execution_receipt", "independent_readback"}.issubset(evidence):
                 add(failures, "USAGE-EVIDENCE-001", operation_path, "external write lacks bound execution evidence")
+        if operation["authority"] == "autonomous":
+            evidence = set(operation["requiredEvidence"])
+            if not {"contract_ref", "contract_bounds_readback"}.issubset(evidence):
+                add(failures, "USAGE-AUTHORITY-005", operation_path, "autonomous authority lacks verified contract evidence")
 
 
 def validate_project(profile: dict[str, Any], path: str, failures: list[dict[str, str]]) -> None:
@@ -235,14 +239,18 @@ def validate_project(profile: dict[str, Any], path: str, failures: list[dict[str
         if stage["id"] in stage_ids:
             add(failures, "USAGE-STAGE-002", stage_path, "stage id must be unique")
         stage_ids.add(stage["id"])
-        if stage["effect"] in {"external_write", "hardware_write"} and stage["authority"] != "apply":
-            add(failures, "USAGE-AUTHORITY-002", stage_path, "external and hardware writes require apply authority")
-        if stage["effect"] == "local_write" and stage["authority"] not in {"plan", "apply"}:
-            add(failures, "USAGE-AUTHORITY-004", stage_path, "local writes require plan or apply authority")
+        if stage["effect"] in {"external_write", "hardware_write"} and stage["authority"] not in {"apply", "autonomous"}:
+            add(failures, "USAGE-AUTHORITY-002", stage_path, "external and hardware writes require apply or autonomous authority")
+        if stage["effect"] == "local_write" and stage["authority"] not in {"plan", "apply", "autonomous"}:
+            add(failures, "USAGE-AUTHORITY-004", stage_path, "local writes require plan, apply or autonomous authority")
+        if stage["effect"] == "hardware_write" and stage["authority"] != "apply":
+            add(failures, "USAGE-AUTHORITY-006", stage_path, "hardware write must not run under a standing autonomy contract")
         if stage["effect"] in {"external_write", "hardware_write"}:
             inputs = set(stage["requiredInputs"])
             if not {"plan_hash", "grant_ref"}.issubset(inputs):
                 add(failures, "USAGE-AUTHORITY-003", stage_path, "external or hardware write lacks plan/grant binding")
+        if stage["authority"] == "autonomous" and "contract_ref" not in set(stage["requiredInputs"]):
+            add(failures, "USAGE-AUTHORITY-005", stage_path, "autonomous stage lacks a bounded contract reference")
         if stage["effect"] == "hardware_write" and "device_identity_readback" not in stage["requiredEvidence"]:
             add(failures, "USAGE-HARDWARE-001", stage_path, "hardware write lacks device identity readback")
     required_completion = set(profile.get("completion", {}).get("requires", []))

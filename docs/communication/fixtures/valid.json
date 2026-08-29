@@ -65,6 +65,92 @@
       }
     },
     {
+      "id": "bounded-autonomous-contract-delegation",
+      "kind": "delegation",
+      "expectValid": true,
+      "document": {
+        "schema": "wellmanifest.subactor-communication/delegation-envelope/v1",
+        "messageId": "msg-20260828-011",
+        "sender": {
+          "kind": "llm_agent",
+          "role": "supervisor",
+          "actorRef": "actor://supervisor/cursor"
+        },
+        "target": {
+          "system": "subactor",
+          "class": "autonomous_system",
+          "controlRef": "control://subactor/default"
+        },
+        "intent": {
+          "outcome": "Develop the declared project increment inside the contract scope",
+          "scope": ["project://subactor/platform"],
+          "acceptance": [
+            "test receipt proves the increment on the exact revision",
+            "independent runtime readback agrees with the receipt"
+          ],
+          "limits": [
+            "stay inside contract allowed operations",
+            "escalate any operation flagged for human approval"
+          ]
+        },
+        "authority": {
+          "mode": "autonomous",
+          "source": "subactor_control",
+          "contractRef": "contract://subactor/autonomy/coding-agent-increment",
+          "planHash": "sha256:bounded-increment-plan",
+          "contractBounds": {
+            "verifiedAt": "2026-08-28T19:25:09Z",
+            "expiresAt": "2026-09-30T00:00:00Z",
+            "remainingExecutions": 4,
+            "maxSteps": 10,
+            "allowedOperations": [
+              "repository.refactor.apply",
+              "repository.test"
+            ],
+            "withinBounds": true
+          }
+        },
+        "readiness": {
+          "autonomyControlRef": "control://subactor/autonomy/control",
+          "observedAt": "2026-08-28T19:25:09Z",
+          "boundedAutonomyReady": true,
+          "blockers": []
+        },
+        "transport": {
+          "kind": "cli",
+          "grantsAuthority": false
+        },
+        "orchestration": {
+          "executionOwner": "subactor",
+          "delegationMode": "outcome",
+          "supervisorMayBypass": false,
+          "subllm": {
+            "role": "internal_model_routing",
+            "grantsAuthority": false
+          }
+        },
+        "effects": [
+          {
+            "effect": "apply a bounded repository increment",
+            "reversibility": "reversible",
+            "rollbackRef": "process://subactor/repository/revert-increment"
+          }
+        ],
+        "evidence": {
+          "required": [
+            "ticket",
+            "process_uri",
+            "plan_hash",
+            "events",
+            "receipts",
+            "readback",
+            "eql",
+            "contract_bounds_readback"
+          ]
+        }
+      }
+    },
+    {
       "id": "admitted-completion",
       "kind": "runtime",
       "expectValid": true,

@@ -1,0 +1,22 @@
+{
+  "schema": "wellmanifest.subactor-usage/project-profile/v1",
+  "id": "project-development",
+  "version": 1,
+  "status": "candidate",
+  "projectRef": "project://subactor/platform",
+  "requiredInterfaces": ["founder-cli"],
+  "stages": [
+    {"id": "discover_readiness", "intentId": "project.develop.discover", "operation": "autonomy.readiness.observe", "effect": "observe", "authority": "observe", "requiredInputs": ["project_ref"], "requiredEvidence": ["autonomy_readiness_snapshot", "capability_report", "repository_identity"], "onFailure": "stop"},
+    {"id": "verify_contract", "intentId": "project.develop.contract.verify", "operation": "autonomy.contract.verify", "effect": "observe", "authority": "observe", "requiredInputs": ["contract_ref"], "requiredEvidence": ["contract_bounds_readback", "allowed_operations_readback"], "onFailure": "escalate"},
+    {"id": "plan_increment", "intentId": "project.develop.plan", "operation": "repository.increment.plan", "effect": "local_write", "authority": "plan", "requiredInputs": ["project_ref", "target_revision", "acceptance_contract"], "requiredEvidence": ["ticket", "intent_ir", "plan_hash", "affected_paths"], "onFailure": "replan"},
+    {"id": "apply_increment", "intentId": "project.develop.apply", "operation": "repository.increment.apply", "effect": "local_write", "authority": "autonomous", "requiredInputs": ["ticket", "plan_hash", "contract_ref", "change_lease"], "requiredEvidence": ["diff_receipt", "scope_readback", "execution_receipt"], "onFailure": "rollback"},
+    {"id": "test_increment", "intentId": "project.develop.test", "operation": "repository.test", "effect": "observe", "authority": "observe", "requiredInputs": ["ticket", "revision", "test_profile"], "requiredEvidence": ["test_receipt", "failure_summary"], "onFailure": "replan"},
+    {"id": "governance_gate", "intentId": "project.develop.governance", "operation": "repository.governance.check", "effect": "observe", "authority": "observe", "requiredInputs": ["ticket", "revision"], "requiredEvidence": ["governance_receipt", "ticket_binding_readback"], "onFailure": "stop"},
+    {"id": "publish_increment", "intentId": "project.develop.publish", "operation": "repository.publish", "effect": "external_write", "authority": "apply", "requiredInputs": ["ticket", "plan_hash", "grant_ref", "target_branch_ref", "trusted_approval_ref"], "requiredEvidence": ["execution_receipt", "merge_receipt", "independent_readback"], "onFailure": "escalate"},
+    {"id": "runtime_readback", "intentId": "project.develop.readback", "operation": "runtime.query", "effect": "observe", "authority": "observe", "requiredInputs": ["deployment_target_ref", "expected_revision"], "requiredEvidence": ["independent_runtime_readback", "acceptance_eql"], "onFailure": "escalate"}
+  ],
+  "completion": {
+    "requires": ["ticket", "exact_revision", "contract_bounds_readback", "test_receipt", "execution_receipts", "merge_receipt", "independent_runtime_readback", "acceptance_eql"],
+    "forbids": ["llm_only_success", "dashboard_only_success", "expired_contract_execution", "unregistered_process", "self_approved_merge", "direct_main_edit", "unbounded_shell_execution"]
+  }
+}

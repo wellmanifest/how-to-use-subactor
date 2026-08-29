@@ -24,7 +24,7 @@
           "intentId": {"type": "string", "minLength": 1},
           "operation": {"type": "string", "minLength": 1},
           "effect": {"enum": ["observe", "local_write", "external_write", "hardware_write"]},
-          "authority": {"enum": ["observe", "plan", "dry_run", "apply"]},
+          "authority": {"enum": ["observe", "plan", "dry_run", "apply", "autonomous"]},
           "requiredInputs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
           "requiredEvidence": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
           "onFailure": {"enum": ["stop", "replan", "rollback", "escalate"]}

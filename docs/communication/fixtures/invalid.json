@@ -46,6 +46,145 @@
       }
     },
     {
+      "id": "expired-autonomy-contract-declared-in-bounds",
+      "kind": "delegation",
+      "expectValid": false,
+      "expectedFindings": ["COMM-CONTRACT-001"],
+      "document": {
+        "schema": "wellmanifest.subactor-communication/delegation-envelope/v1",
+        "messageId": "bad-autonomy-001",
+        "sender": {
+          "kind": "llm_agent",
+          "role": "supervisor",
+          "actorRef": "actor://supervisor/cursor"
+        },
+        "target": {
+          "system": "subactor",
+          "class": "autonomous_system",
+          "controlRef": "control://subactor/default"
+        },
+        "intent": {
+          "outcome": "Run the onboarding communication increment unattended",
+          "scope": ["project://subactor/platform"],
+          "acceptance": ["receipt and independent readback agree"]
+        },
+        "authority": {
+          "mode": "autonomous",
+          "source": "subactor_control",
+          "contractRef": "contract://subactor/autonomy/onboarding-communications",
+          "planHash": "sha256:stale-contract-plan",
+          "contractBounds": {
+            "verifiedAt": "2026-08-28T19:25:09Z",
+            "expiresAt": "2026-07-15T13:03:53.447Z",
+            "remainingExecutions": 1,
+            "maxSteps": 10,
+            "allowedOperations": ["email.send"],
+            "withinBounds": true
+          }
+        },
+        "readiness": {
+          "autonomyControlRef": "control://subactor/autonomy/control",
+          "observedAt": "2026-08-28T19:25:09Z",
+          "boundedAutonomyReady": true
+        },
+        "transport": {"kind": "cli", "grantsAuthority": false},
+        "orchestration": {
+          "executionOwner": "subactor",
+          "delegationMode": "outcome",
+          "supervisorMayBypass": false,
+          "subllm": {
+            "role": "internal_model_routing",
+            "grantsAuthority": false
+          }
+        },
+        "effects": [
+          {
+            "effect": "send onboarding message",
+            "reversibility": "reversible",
+            "compensationRef": "process://subactor/email/retract"
+          }
+        ],
+        "evidence": {
+          "required": [
+            "ticket",
+            "process_uri",
+            "plan_hash",
+            "events",
+            "receipts",
+            "readback",
+            "contract_bounds_readback"
+          ]
+        }
+      }
+    },
+    {
+      "id": "unattended-autonomy-without-readiness-or-contract",
+      "kind": "delegation",
+      "expectValid": false,
+      "expectedFindings": [
+        "COMM-AUTHORITY-003",
+        "COMM-CONTRACT-001",
+        "COMM-READINESS-001",
+        "COMM-EVIDENCE-001"
+      ],
+      "document": {
+        "schema": "wellmanifest.subactor-communication/delegation-envelope/v1",
+        "messageId": "bad-autonomy-002",
+        "sender": {
+          "kind": "llm_agent",
+          "role": "supervisor",
+          "actorRef": "actor://supervisor/cursor"
+        },
+        "target": {
+          "system": "subactor",
+          "class": "autonomous_system",
+          "controlRef": "control://subactor/default"
+        },
+        "intent": {
+          "outcome": "Let the system develop the project without supervision",
+          "scope": ["project://subactor/platform"],
+          "acceptance": ["increment is delivered"]
+        },
+        "authority": {
+          "mode": "autonomous",
+          "source": "subactor_control"
+        },
+        "readiness": {
+          "autonomyControlRef": "control://subactor/autonomy/control",
+          "observedAt": "2026-08-28T19:25:09Z",
+          "boundedAutonomyReady": false,
+          "blockers": ["structural_capability_gaps", "service_dependencies"]
+        },
+        "transport": {"kind": "cli", "grantsAuthority": false},
+        "orchestration": {
+          "executionOwner": "subactor",
+          "delegationMode": "outcome",
+          "supervisorMayBypass": false,
+          "subllm": {
+            "role": "internal_model_routing",
+            "grantsAuthority": false
+          }
+        },
+        "effects": [
+          {
+            "effect": "apply repository increment",
+            "reversibility": "reversible",
+            "rollbackRef": "process://subactor/repository/revert-increment"
+          }
+        ],
+        "evidence": {
+          "required": [
+            "ticket",
+            "process_uri",
+            "plan_hash",
+            "events",
+            "receipts",
+            "readback"
+          ]
+        }
+      }
+    },
+    {
       "id": "codex-bypass-and-llm-completion",
       "kind": "runtime",
       "expectValid": false,

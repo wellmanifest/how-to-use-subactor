@@ -11,8 +11,25 @@ authority source.
 3. `docs/profiles/subactor-shell.v1.json` describes the persistent Shell Bridge.
 4. `docs/profiles/c2004-refactoring.v1.json` composes semantic operations and proof
    requirements for C2004; it contains no executable command or secret.
-5. `docs/standard/manifest.v1.json` binds every published profile by SHA-256 and records the
+5. `docs/profiles/project-development.v1.json` composes bounded project
+   development, from readiness and contract verification through a
+   contract-executed increment to a trusted, human-approved publication.
+6. `docs/standard/manifest.v1.json` binds every published profile by SHA-256 and records the
    observed runtime revisions.
+
+## Authority levels in profiles
+
+Profiles use five authority levels. `observe`, `plan`, `dry_run` and `apply`
+keep their historical meaning. `autonomous` marks a stage or operation that a
+standing autonomy contract may execute without asking a human again, and it is
+constrained rather than privileged:
+
+- an autonomous operation MUST require `contract_ref` and
+  `contract_bounds_readback` evidence (`USAGE-AUTHORITY-005`);
+- an external write keeps its plan-bound `grant_ref`, because the contract
+  authorizes issuing that grant instead of replacing it; and
+- a `hardware_write` stage MUST stay at `apply` (`USAGE-AUTHORITY-006`), so no
+  standing contract can flash a device unattended.
 
 An adopter MUST pin the standard version, repository revision and artifact
 digest. Claiming adoption by name or branch alone is insufficient.

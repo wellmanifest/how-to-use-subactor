@@ -27,6 +27,7 @@ GENERIC_MCP_NAMES = {
     "invoke",
 }
 URI_REF_RE = re.compile(r"^[a-z][a-z0-9+.-]*://[^\s]+$")
+UTC_INSTANT_RE = re.compile(r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.\d+)?Z$")
 
 
 def finding(code: str, path: str, message: str) -> dict[str, str]:
@@ -58,6 +59,14 @@ def list_at(value: Any, key: str) -> list[Any]:
 
 def is_uri_ref(value: Any) -> bool:
     return isinstance(value, str) and URI_REF_RE.fullmatch(value) is not None
+
+
+def utc_instant(value: Any) -> str | None:
+    """Return a second-precision UTC instant that sorts lexicographically."""
+    if not isinstance(value, str):
+        return None
+    match = UTC_INSTANT_RE.fullmatch(value)
+    return match.group(1) if match else None
 
 
 def exact_string_set(values: list[Any], expected: set[str]) -> bool:
@@ -168,13 +177,50 @@ def validate_delegation(document: Any) -> list[dict[str, str]]:
         "$.authority.source",
         "authority must be resolved by Subactor Control",
     )
-    if authority.get("mode") == "apply":
+    mode = authority.get("mode")
+    if mode == "apply":
         require(
             bool(authority.get("grantRef")) and bool(authority.get("planHash")),
             findings,
             "COMM-AUTHORITY-002",
             "$.authority",
             "apply requires both grantRef and planHash",
+        )
+    if mode == "autonomous":
+        require(
+            bool(authority.get("contractRef")) and bool(authority.get("planHash")),
+            findings,
+            "COMM-AUTHORITY-003",
+            "$.authority",
+            "autonomous execution requires both contractRef and planHash",
+        )
+        bounds = object_at(authority, "contractBounds")
+        verified_at = utc_instant(bounds.get("verifiedAt"))
+        expires_at = utc_instant(bounds.get("expiresAt"))
+        remaining = bounds.get("remainingExecutions")
+        require(
+            bounds.get("withinBounds") is True
+            and verified_at is not None
+            and expires_at is not None
+            and verified_at < expires_at
+            and isinstance(remaining, int)
+            and not isinstance(remaining, bool)
+            and remaining > 0
+            and bool(list_at(bounds, "allowedOperations")),
+            findings,
+            "COMM-CONTRACT-001",
+            "$.authority.contractBounds",
+            "autonomy contract must be verified as unexpired, unexhausted and operation-bounded",
+        )
+        readiness = object_at(document, "readiness")
+        require(
+            readiness.get("boundedAutonomyReady") is True
+            and bool(readiness.get("autonomyControlRef"))
+            and utc_instant(readiness.get("observedAt")) is not None,
+            findings,
+            "COMM-READINESS-001",
+            "$.readiness",
+            "autonomous delegation requires an observed bounded-autonomy readiness preflight",
         )
 
     for index, effect in enumerate(list_at(document, "effects")):
@@ -211,6 +257,14 @@ def validate_delegation(document: Any) -> list[dict[str, str]]:
         "$.evidence.required",
         "evidence chain must require ticket, process URI, plan hash, events, receipts and readback",
     )
+    if mode == "autonomous":
+        require(
+            "contract_bounds_readback" in required_evidence,
+            findings,
+            "COMM-EVIDENCE-001",
+            "$.evidence.required",
+            "autonomous execution must require a contract bounds readback",
+        )
     return findings
 
 
