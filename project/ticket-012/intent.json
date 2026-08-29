@@ -20,7 +20,7 @@
   "conflictsWith": [],
   "integrationTicket": null,
   "delivery": {
-    "acceptedBaseSha": "41a0e4bb91e563a0a3eabd666fd5586edb41d7ad",
+    "acceptedBaseSha": "4342ec2f28e18eeb6c1b4d10127417964be39a84",
     "targetBranch": "main",
     "outcome": "A supervisor reading the guide can run bounded autonomous work end to end: check readiness, verify contract bounds, choose the right flag, bootstrap the Shell and treat the endpoint catalog as partial.",
     "nonGoals": [
