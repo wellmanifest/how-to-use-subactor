@@ -2,9 +2,9 @@
 {
   "schema": "wellmanifest.subactor-communication/specification/v1",
   "id": "subactor-communication",
-  "version": 2,
+  "version": 3,
   "status": "current",
-  "updated": "2026-08-25"
+  "updated": "2026-08-28"
 }
 ---
 
@@ -78,6 +78,40 @@ resource URIs. A generic provider label, broad `.env` search, model credential
 or destination name cannot stand in for an exact registered resource. Missing
 or mismatched identity returns the same ticket to `replan_required`.
 
+## Bounded autonomous execution
+
+`authority.mode` admits a fifth level, `autonomous`. It represents a standing
+delegation that a human holding plan-approval authority issued in advance, not
+a wider power than `apply` and not a way to skip a gate.
+
+An autonomy contract declares the operations, step budget, execution budget and
+expiry inside which Control may approve a plan without asking a human again.
+The contract authorizes the *issuance* of a plan-bound approval; it never
+replaces the exact per-plan binding. A mutating process therefore still emits
+the runtime-event v2 grant that matches its actor, process URI, operation and
+resource URI set exactly. An operation which the contract or policy flags for
+human approval escalates even when its name appears in the allowed list.
+
+A delegation in this mode MUST carry:
+
+1. `authority.contractRef` and `authority.planHash`, because the contract
+   approves one evaluated plan rather than an open-ended objective;
+2. `authority.contractBounds`, recording the verification instant, expiry,
+   remaining executions and allowed operations that Control returned; and
+3. `readiness`, recording the observed bounded-autonomy preflight.
+
+`contractBounds.withinBounds` is a claim, not evidence. The runner independently
+rejects a contract whose expiry does not follow its verification instant or
+whose remaining execution budget is not positive, so a contract that a registry
+still labels `active` after expiry cannot authorize work. Evidence MUST include
+`contract_bounds_readback`, so completion proves which bounds were in force.
+
+Readiness is a precondition rather than a formality. Control publishes whether
+bounded autonomy is currently possible; delegating apply-class work while that
+signal is false produces a ticket that waits instead of executing. A supervisor
+records the observation and its blockers, and treats a negative signal as a
+reason to resolve the blocker or fall back to `dry_run`.
+
 The important difference from a simple manual permission dialog is the
 reversibility gate:
 
@@ -96,6 +130,9 @@ reversibility gate:
 | `COMM-OWNERSHIP-001` | Supervisor/LLM took execution or decomposition ownership |
 | `COMM-AUTHORITY-001` | Transport or SubLLM was treated as an authority source |
 | `COMM-AUTHORITY-002` | Apply lacks a plan-bound grant |
+| `COMM-AUTHORITY-003` | Autonomous execution lacks a contract reference or plan hash |
+| `COMM-CONTRACT-001` | Autonomy contract is expired, exhausted or not operation-bounded |
+| `COMM-READINESS-001` | Autonomous delegation lacks an observed bounded-autonomy preflight |
 | `COMM-EFFECT-001` | Reversible effect lacks rollback/compensation |
 | `COMM-EFFECT-002` | Irreversible effect lacks higher-authority approval |
 | `COMM-EVIDENCE-001` | Required evidence chain is incomplete |

@@ -1,7 +1,7 @@
 {
   "schema": "wellmanifest.subactor-usage/interface-profile/v1",
   "id": "founder-cli",
-  "version": 1,
+  "version": 2,
   "status": "current",
   "executable": "subactor",
   "runtime": {
@@ -19,13 +19,21 @@
     {"id": "delegation.plan", "command": "ask", "effect": "local_write", "authority": "plan", "requiredFlags": ["--json"], "requiredEvidence": ["ticket_or_rejection", "intent_result"]},
     {"id": "delegation.dry_run", "command": "ask", "effect": "local_write", "authority": "dry_run", "requiredFlags": ["--execute", "--json"], "requiredEvidence": ["ticket", "plan_hash", "dry_run_receipt"]},
     {"id": "delegation.apply", "command": "ask", "effect": "external_write", "authority": "apply", "requiredFlags": ["--apply", "--json"], "requiredEvidence": ["ticket", "plan_hash", "grant_ref", "execution_receipt", "independent_readback"]},
+    {"id": "delegation.autonomous", "command": "ask", "effect": "external_write", "authority": "autonomous", "requiredFlags": ["--autonomous", "--json"], "requiredEvidence": ["ticket", "plan_hash", "contract_ref", "contract_bounds_readback", "autonomy_readiness_snapshot", "execution_receipt", "independent_readback"]},
+    {"id": "autonomy.readiness", "command": "get", "effect": "observe", "authority": "observe", "requiredEvidence": ["autonomy_readiness_snapshot"]},
+    {"id": "autonomy.contracts", "command": "get", "effect": "observe", "authority": "observe", "requiredEvidence": ["contract_bounds_readback"]},
     {"id": "process.plan", "command": "uri", "effect": "local_write", "authority": "plan", "requiredEvidence": ["ticket", "process_uri", "plan_hash"]}
   ],
   "invariants": [
     "execute_is_dry_run",
     "apply_requires_separate_authority",
+    "autonomous_requires_verified_contract",
+    "autonomous_requires_bounded_readiness",
+    "autonomous_contract_does_not_replace_plan_bound_grant",
+    "human_approval_flagged_operation_always_escalates",
     "transport_never_grants_authority",
     "discover_endpoints_before_post",
+    "endpoint_catalog_is_partial",
     "completion_requires_receipt_and_readback"
   ]
 }

@@ -41,6 +41,34 @@ class ConformanceTest(unittest.TestCase):
         conformance.validate_project(broken, "fixture", failures)
         self.assertIn("USAGE-HARDWARE-001", {item["code"] for item in failures})
 
+    def test_autonomous_operation_without_contract_evidence_is_rejected(self) -> None:
+        profile = conformance.load_json(conformance.ROOT / "docs/profiles/founder-cli.v1.json")
+        broken = copy.deepcopy(profile)
+        operation = next(item for item in broken["operations"] if item["authority"] == "autonomous")
+        operation["requiredEvidence"] = ["ticket", "plan_hash", "execution_receipt", "independent_readback"]
+        failures: list[dict[str, str]] = []
+        conformance.validate_interface(broken, "fixture", failures)
+        self.assertIn("USAGE-AUTHORITY-005", {item["code"] for item in failures})
+
+    def test_autonomous_stage_without_contract_reference_is_rejected(self) -> None:
+        profile = conformance.load_json(conformance.ROOT / "docs/profiles/project-development.v1.json")
+        broken = copy.deepcopy(profile)
+        stage = next(item for item in broken["stages"] if item["authority"] == "autonomous")
+        stage["requiredInputs"] = [value for value in stage["requiredInputs"] if value != "contract_ref"]
+        failures: list[dict[str, str]] = []
+        conformance.validate_project(broken, "fixture", failures)
+        self.assertIn("USAGE-AUTHORITY-005", {item["code"] for item in failures})
+
+    def test_hardware_write_cannot_run_under_a_standing_contract(self) -> None:
+        profile = conformance.load_json(conformance.ROOT / "docs/profiles/c2004-refactoring.v1.json")
+        broken = copy.deepcopy(profile)
+        flash = next(item for item in broken["stages"] if item["effect"] == "hardware_write")
+        flash["authority"] = "autonomous"
+        flash["requiredInputs"].append("contract_ref")
+        failures: list[dict[str, str]] = []
+        conformance.validate_project(broken, "fixture", failures)
+        self.assertIn("USAGE-AUTHORITY-006", {item["code"] for item in failures})
+
     def test_project_profile_cannot_embed_commands(self) -> None:
         profile = conformance.load_json(conformance.ROOT / "docs/profiles/c2004-refactoring.v1.json")
         broken = copy.deepcopy(profile)
