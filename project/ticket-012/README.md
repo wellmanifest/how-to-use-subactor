@@ -2,8 +2,8 @@
 
 - **ID**: ticket-012
 - **Owner**: unresolved:human
-- **Status**: IN_PROGRESS
-- **Workflow state**: EDIT
+- **Status**: DONE
+- **Workflow state**: DONE
 - **Created**: 2026-08-28
 
 ## Goal and scope
@@ -46,16 +46,18 @@ correctly — including two paths the guide itself uses in section 5.3.
 
 ## Acceptance criteria
 
-- [ ] AC-01: The guide documents the five authority levels, contract bounds
+- [x] AC-01: The guide documents the five authority levels, contract bounds
       verification, the readiness preflight and the `--autonomous` flag, and its
       declared release matches the manifest and `VERSION`.
-- [ ] AC-02: Section 5.2 describes the real Shell bootstrap with credentials
+- [x] AC-02: Section 5.2 describes the real Shell bootstrap with credentials
       passed only by reference, section 5.3 states that endpoint discovery is
       partial in both directions, and both gates still pass.
-- [ ] AC-03: The guide distinguishes Founder Control tickets from a project's
+- [x] AC-03: The guide distinguishes Founder Control tickets from a project's
       Koru/Planfile queue, names the observed Koru MCP tools, treats
       `waiting_input` + `executor=human` as official execution, and tells the
-      supervisor to follow the target repository `AGENTS.md` for publication.
+      supervisor to follow the target repository `AGENTS.md` for publication;
+      protected PR #18 merged at exact head `4731c50c4ef1666fe8f89eddc5830bfd1f3f12e4`
+      as merge commit `a3d732a`.
 
 ## Participants
 

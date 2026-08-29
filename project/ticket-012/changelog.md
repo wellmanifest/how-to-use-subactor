@@ -1,5 +1,10 @@
 # Ticket 012 changelog
 
+## 2026-08-29
+
+- Closed the lifecycle after protected PR #18 merged at exact head
+  `4731c50c4ef1666fe8f89eddc5830bfd1f3f12e4` as `a3d732a`.
+
 ## 2026-08-28
 
 - Raised the guide to release `0.5.0` and added `autonomous` to the documented
