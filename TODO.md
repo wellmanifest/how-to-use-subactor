@@ -1,5 +1,10 @@
 # TODO
 
+- [x] [`ticket-012`](project/ticket-012/README.md) — document bounded autonomous
+  operation, Shell bootstrap and live Control vs Koru execution planes.
+  Status: `DONE / DONE`; workstream: `governance`; protected PR #18 merged
+  after exact-head Validator approval.
+
 - [x] [`ticket-011`](project/ticket-011/README.md) — bind bounded autonomous
   contract execution, readiness preflight and project development into the
   executable standard. Status: `DONE / DONE`; workstream: `integration`;
