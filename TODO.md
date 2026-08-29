@@ -1,8 +1,9 @@
 # TODO
 
-- [ ] [`ticket-013`](project/ticket-013/README.md) — document `subactor auto`,
+- [x] [`ticket-013`](project/ticket-013/README.md) — document `subactor auto`,
   chat/founder DOQL and SubLLM candidate failover for release 0.5.1.
-  Status: `IN_PROGRESS / EDIT`; workstream: `governance`.
+  Status: `DONE / DONE`; workstream: `governance`; merged to protected `main`
+  at `c25adbe`.
 
 - [x] [`ticket-012`](project/ticket-012/README.md) — document bounded autonomous
   operation, Shell bootstrap and live Control vs Koru execution planes.
