@@ -2,8 +2,8 @@
 
 - **ID**: ticket-013
 - **Owner**: unresolved:human
-- **Status**: IN_PROGRESS
-- **Workflow state**: EDIT
+- **Status**: DONE
+- **Workflow state**: DONE
 - **Created**: 2026-08-29
 
 ## Goal and scope
@@ -18,8 +18,9 @@ the machine-checkable profile patch:
 
 ## Acceptance criteria
 
-- [ ] AC-01: README and CHANGELOG declare release `0.5.1` and document the three
-      areas above; conformance and governance checks pass.
+- [x] AC-01: README and CHANGELOG declare release `0.5.1` and document the three
+      areas above; conformance and governance checks pass; merged to `main` at
+      `c25adbe`.
 
 ## Participants
 
