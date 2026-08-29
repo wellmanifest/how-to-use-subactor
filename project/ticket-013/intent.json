@@ -1,0 +1,75 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-013",
+  "summary": "Document subactor auto, chat DOQL and SubLLM candidate failover",
+  "workstream": "governance",
+  "classification": {
+    "kind": "SERVICE",
+    "priority": "P2",
+    "origin": "health"
+  },
+  "allowedPaths": [
+    "README.md",
+    "CHANGELOG.md",
+    "project/ticket-013/**",
+    "project/TICKETS.md",
+    "TODO.md"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md"
+  ],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "047fd5fb3cf2ead171297187e3a551a8dd79d39a",
+    "targetBranch": "main",
+    "outcome": "A supervisor reading release 0.5.1 knows how to delegate Founder autonomy from the CLI, interpret chat versus founder DOQL, and read SubLLM candidate failover.",
+    "nonGoals": [
+      "Change machine-checkable contracts or profiles",
+      "Document deployment credential provisioning not verified in this release"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 20,
+    "budgets": {
+      "maxImplementationFiles": 4,
+      "maxAffectedComponents": 1,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Extend the narrative guide with auto/delegate commands, chat/founder DOQL behavior and SubLLM route failover semantics.",
+      "components": [
+        {
+          "name": "supervisor-guide",
+          "paths": [
+            "README.md",
+            "CHANGELOG.md"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert guide prose to release 0.5.0; ticket-015 machine-checkable artifacts remain valid."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python3 docs/standard/conformance.py check",
+          "./project/governance-check.sh --actor agent --base 047fd5fb3cf2ead171297187e3a551a8dd79d39a --head HEAD"
+        ],
+        "evidence": "project/ticket-013/ai-cursor-logs.txt"
+      }
+    ]
+  }
+}
