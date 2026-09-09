@@ -29,7 +29,7 @@ STALE_CODE = "GOV-REMEDIATION-003"
 PROJECTION_CODE = "GOV-REMEDIATION-004"
 
 INTENT_ID = re.compile(r"RI-[A-Z0-9][A-Z0-9-]*")
-TICKET_ID = re.compile(r"ticket-[0-9]{3}")
+TICKET_ID = re.compile(r"ticket-[0-9]{3,}")
 REPOSITORY = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 FINDING_ID = re.compile(r"F-[A-Z0-9][A-Z0-9-]*")
 ACTION_ID = re.compile(r"A-[A-Z0-9][A-Z0-9-]*")
