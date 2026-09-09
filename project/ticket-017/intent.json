@@ -1,0 +1,74 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-017",
+  "summary": "Document current multi-source diagnosis and private hourly logging",
+  "workstream": "integration",
+  "classification": {
+    "kind": "SERVICE",
+    "priority": "P2",
+    "origin": "requested"
+  },
+  "allowedPaths": [
+    "docs/README.md",
+    "docs/information/multi-source-diagnostics.md",
+    "project/ticket-017/**"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md"
+  ],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "669c5d06e9d7c3a801e69bad71dbdb79a9d61941",
+    "targetBranch": "main",
+    "outcome": "Publish accurate, evidence-linked diagnostic guidance distinguishing implemented canonical contracts, local archive validation and deployment gaps.",
+    "nonGoals": [
+      "Deploy the collector or change production autonomy",
+      "Change immutable log contracts or raw source data"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 25,
+    "budgets": {
+      "maxImplementationFiles": 2,
+      "maxAffectedComponents": 1,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Add canonical owner-specific information and documentation index using existing runtime evidence and immutable standard revisions.",
+      "components": [
+        {
+          "name": "diagnostic-guidance",
+          "paths": [
+            "docs/README.md",
+            "docs/information/multi-source-diagnostics.md"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert this documentation addition; runtime and stored evidence remain unchanged."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python3 docs/standard/conformance.py check --discover",
+          "./project/governance-check.sh --actor agent",
+          "git diff --check"
+        ],
+        "evidence": "Bounded validation receipt in the ticket and canonical information document."
+      }
+    ]
+  }
+}
