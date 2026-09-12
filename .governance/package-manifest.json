@@ -116,6 +116,12 @@
       "executable": false
     },
     {
+      "source": "governance/ticket-activity-override.schema.json",
+      "target": ".governance/ticket-activity-override.schema.json",
+      "strategy": "managed",
+      "executable": false
+    },
+    {
       "source": "governance/terminal-receipt-registry.schema.json",
       "target": ".governance/terminal-receipt-registry.schema.json",
       "strategy": "managed",
@@ -278,7 +284,7 @@
       "executable": false
     },
     {
-      "source": "governance/required-checks.json",
+      "source": "template/files/required-checks.template.json",
       "target": ".governance/required-checks.json",
       "strategy": "extendable",
       "executable": false
