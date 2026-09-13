@@ -28,6 +28,14 @@ SERVICE/FEATURE that create a repo, fill `intent.json` `placement`
 
 Before any multi-step implementation, an agent must:
 
+Run the managed `.governance/work_start_check.py --root . --workstream <id>`
+before development or allocation; add `--ticket ticket-NNN` for continuation.
+Observe registered worktrees and unintegrated branches, then prefer finishing
+authorized work, read-only assistance, accepted fenced handoff or serialization.
+A new ticket needs a free scope and WIP capacity. Recheck owner, intent, current
+state and controller fencing before writing. `--force-new` is not a bypass.
+Unknown ownership or remote/independent-clone state must not be guessed.
+
 1. Read `.governance/manifest.json`, `TODO.md`, `project/TICKETS.md` and the
    active ticket.
    Respect `repository.mode`: `standalone` owns a separate repository, while
@@ -75,9 +83,16 @@ Before any multi-step implementation, an agent must:
    `project\governance-check.bat` on Windows) plus the stack checks before
    reporting completion. Root `project.sh` / `project.bat` are optional
    target-owned seed aliases and must not be assumed to contain the gate.
-9. Serialize ticket-ID allocation before branching, then use a separate
-   branch/worktree per implementation ticket. Resolve its location with the
-   managed `wellmanifest/worktrees` checker. Resolve the primary checkout from
+9. Reuse the matching authorized ticket/worktree before allocating another.
+   Evaluate actual writers per repository and scope, not chat-agent count.
+   Do not create a ticket/worktree for read-only inspection, local checks,
+   receipts, checkpoints or routine continuation. A write in a second repository
+   has its own owner; reading it does not require adoption or a maintenance task.
+   Allocate only when material delivery needs isolation and no matching authorized
+   checkout exists. Preserve the adopted delivery profile even for one writer:
+   Worktrees v5 still requires a canonical linked delivery checkout. Serialize
+   ticket-ID allocation before new branching, then resolve the required location
+   with the managed `wellmanifest/worktrees` checker. Resolve the primary checkout from
    Git even when allocation starts inside a linked checkout. The only
    publishable linked worktree is
    `<primaryCheckout>/.worktrees/<ticket-NNN>--<slug>` with
@@ -156,8 +171,10 @@ Before any multi-step implementation, an agent must:
    the exact allowlisted checkout path, never a pattern or branch name. Run the
    adopted workspace lifecycle checker through Goal for the terminal audit. CI
    validates GitHub state separately and cannot inspect a developer filesystem.
-17. Allocate every ticket ID only through `./project/new-ticket.sh` after
-   fetching/pruning. Never create or copy `project/ticket-{NNN}` manually; the
+17. Allocate every ticket ID only through `./project/new-ticket.sh` using
+   local and already-fetched remote refs. Fetch/prune only when explicitly
+   requested via `--refresh-remote` (C-CONCURRENCY-002).
+   Never create or copy `project/ticket-{NNN}` manually; the
    clone-wide lock and high-water reservation must exist before commit.
 18. Keep an implementation ticket `IN_PROGRESS / PUBLICATION` through
    exact-head review and trusted merge. The protected delivery controller closes
@@ -208,6 +225,18 @@ Before any multi-step implementation, an agent must:
     snapshot. Pre-commit checks only the local immutable pin; explicit
     adoption/updater automation owns freshness and the hook never fetches or
     mutates.
+
+25. Apply proportional evidence through
+    `.governance/decision_record.py classify-action --action <action>`.
+    Routine in-scope edits, formatting and local checks use the existing intent,
+    diff and check report. They do not require a new decision record. Never
+    generate APPROVE or REQUEST_CHANGES from a local PASS/FAIL; a valid legacy
+    record is not trusted review. Material scope/authority, destructive and
+    publication decisions retain recomputable evidence and independent control.
+    Finalize tracked carriers and format checks before snapshot/checkpoint and
+    lease release. Reuse the matching lease; coalesce same-boundary checkpoint
+    triggers. Do not recursively log the act of writing evidence. Read-only
+    inspection and external receipt writes do not acquire repository write leases.
 
 Markdown approval is an audit note, not trusted merge approval. Required
 merge approval comes from the repository's protected review, attestation and

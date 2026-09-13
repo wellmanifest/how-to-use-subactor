@@ -53,6 +53,7 @@ declare the three explicitly for a defect or new behavior.
 
 Only a human may authorize --force-new. Human-owned user-*.md files must be
 created and written by that human or by a trusted intake boundary.
+--force-new never bypasses repository work-start admission.
 EOF
 }
 
@@ -368,8 +369,7 @@ if git_common_dir="$(git rev-parse --path-format=absolute --git-common-dir 2>/de
   trap release_allocation_lock EXIT INT TERM
 fi
 
-# The allocator owns the freshness requirement. Relying on a caller to fetch
-# recreates the same partial view that clone-wide locking is meant to avoid.
+# Remote refresh is explicit. The start check below uses only observed refs.
 if [[ "$REFRESH_REMOTE" == true ]] \
   && git rev-parse --git-dir >/dev/null 2>&1 \
   && git remote get-url origin >/dev/null 2>&1; then
@@ -377,6 +377,30 @@ if [[ "$REFRESH_REMOTE" == true ]] \
     echo "GOV-TICKET-LOCK-004: remote ticket refs could not be refreshed safely." >&2
     echo "  remediation: restore origin connectivity and retry, or omit --refresh-remote and rely on local refs plus protected merge collision detection." >&2
     exit 4
+  fi
+fi
+
+# Before reserving an ID or contacting the registered allocator, inspect all
+# registered worktrees and local branches, not just this checkout's ticket.
+# The clone allocation lock covers this observation and the identity effect;
+# it is NOT a writer lease. Recheck admission and fencing before development.
+# Unborn/non-Git bootstrap has no branch history yet and retains seed behavior.
+if git rev-parse --verify HEAD >/dev/null 2>&1; then
+  start_runtime=""
+  for candidate in .governance/work_start_check.py scripts/work_start_check.py; do
+    if [[ -f "$candidate" ]]; then
+      start_runtime="$candidate"
+      break
+    fi
+  done
+  if [[ -z "$start_runtime" ]]; then
+    echo "GOV-WORK-START-001: managed work-start checker is missing; restore the complete pinned package." >&2
+    exit 3
+  fi
+  if ! start_report="$(python3 "$start_runtime" --root . --workstream "$WORKSTREAM" --storage "$TICKET_STORAGE" --allocation-check)"; then
+    printf '%s\n' "$start_report" >&2
+    echo "GOV-WORK-START-001: reuse, assist, hand off or serialize existing work before new allocation; preserve all checkouts." >&2
+    exit 3
   fi
 fi
 
