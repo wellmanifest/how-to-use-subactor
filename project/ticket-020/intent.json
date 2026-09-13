@@ -1,0 +1,83 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-020",
+  "summary": "Adopt reuse-first work admission 0.20.26",
+  "workstream": "governance",
+  "classification": {
+    "kind": "BUG",
+    "priority": "P1",
+    "origin": "requested"
+  },
+  "allowedPaths": [
+    "project/ticket-020/**",
+    ".governance/**",
+    "AGENTS.md",
+    "project/new-ticket.sh"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    ".env"
+  ],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "b39747eb9125b71ce0499e97c89487365a0539c2",
+    "targetBranch": "main",
+    "outcome": "Adopt published reuse-first work admission and recovery diagnostics without changing application content or bypassing protected publication.",
+    "nonGoals": [
+      "Application content changes",
+      "Force push, self review, deleting unknown work or weakening gates",
+      "Registry release or tag"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 20,
+    "budgets": {
+      "maxImplementationFiles": 2,
+      "maxAffectedComponents": 1,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "The current user authorizes serial fleet adoption and protected publication. Use the immutable Goal adoption generator; only hash-verified managed payload receives the adoption exception. No active predecessor remains after exact merged-PR receipt reconciliation.",
+      "components": [
+        {
+          "name": "governance-instance",
+          "paths": [
+            ".governance/**",
+            "AGENTS.md",
+            "project/new-ticket.sh"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Restore the previously published immutable governance revision in an independently reviewed successor change."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "goal governance adopt --source-revision 8d86cd61404d51809532a8292ce9c0cc02ed6157 --check",
+          "./project/governance-check.sh --base origin/main --head HEAD --actor agent",
+          "python3 docs/standard/conformance_test.py"
+        ],
+        "evidence": "Local gate and conformance receipts; independent exact-head CI and Validator required before merge."
+      }
+    ],
+    "standardAdoption": {
+      "sourceRepository": "wellmanifest/new-project",
+      "fromRevision": "d54878a105a20d84dd554f205bc177dcacc8730a",
+      "toRevision": "8d86cd61404d51809532a8292ce9c0cc02ed6157"
+    }
+  }
+}
