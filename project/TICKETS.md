@@ -22,4 +22,6 @@ This file indexes governance tickets without taking ownership of
 | **ticket-016** | [`README.md`](./ticket-016/README.md) | [`preprompt.md`](./ticket-016/preprompt.md) | - |  [`ai-cursor.md`](./ticket-016/ai-cursor.md) |  [`ai-cursor-logs.txt`](./ticket-016/ai-cursor-logs.txt) | [`changelog.md`](./ticket-016/changelog.md) |
 | **ticket-017** | [`README.md`](./ticket-017/README.md) | [`preprompt.md`](./ticket-017/preprompt.md) | - |  [`ai-codex.md`](./ticket-017/ai-codex.md) |  [`ai-codex-logs.txt`](./ticket-017/ai-codex-logs.txt) | [`changelog.md`](./ticket-017/changelog.md) |
 | **ticket-018** | [`README.md`](./ticket-018/README.md) | [`preprompt.md`](./ticket-018/preprompt.md) | - |  [`ai-codex.md`](./ticket-018/ai-codex.md) |  [`ai-codex-logs.txt`](./ticket-018/ai-codex-logs.txt) | [`changelog.md`](./ticket-018/changelog.md) |
+| **ticket-019** | [`README.md`](./ticket-019/README.md) | [`preprompt.md`](./ticket-019/preprompt.md) | - |  [`ai-claude.md`](./ticket-019/ai-claude.md) |  [`ai-claude-logs.txt`](./ticket-019/ai-claude-logs.txt) | [`changelog.md`](./ticket-019/changelog.md) |
+| **ticket-020** | [`README.md`](./ticket-020/README.md) | - | - | - | - | - |
 <!-- AUTO:TICKET_INDEX:END -->
