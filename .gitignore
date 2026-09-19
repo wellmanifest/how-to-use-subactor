@@ -7,3 +7,10 @@
 /.subactor/receipts/
 /.subactor/cache/
 /.subactor/snapshots/
+
+# koru runtime artefacts (generated)
+.planfile/.koru/
+.koru/
+.planfile/sprints/*.bak-*
+koru.yaml
+.planfile/
