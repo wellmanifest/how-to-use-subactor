@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import json
 import os
 import re
@@ -139,20 +140,70 @@ def _reject_nonfinite_constant(token: str) -> Any:
     raise ValueError(f"non-finite JSON constant is forbidden: {token}")
 
 
+def _read_regular_bytes(path: Path, *, root: Path | None = None) -> bytes:
+    """Read a regular file without following symlinks, anchored via dir_fd when root is set."""
+    o_nofollow = getattr(os, "O_NOFOLLOW", 0)
+    o_directory = getattr(os, "O_DIRECTORY", 0)
+    if root is None:
+        if path.is_symlink():
+            raise ValueError(f"symlink JSON input is forbidden: {path}")
+        try:
+            fd = os.open(path, os.O_RDONLY | o_nofollow)
+        except OSError as exc:
+            if exc.errno == errno.ELOOP:
+                raise ValueError(f"symlink JSON input is forbidden: {path}") from exc
+            raise
+        try:
+            if not stat.S_ISREG(os.fstat(fd).st_mode):
+                raise ValueError(f"JSON input must be a regular file: {path}")
+            with os.fdopen(fd, "rb") as stream:
+                fd = -1
+                return stream.read()
+        finally:
+            if fd >= 0:
+                os.close(fd)
+
+    if root.is_symlink():
+        raise ValueError(f"symlink root is forbidden: {root}")
+    rel_parts = path.relative_to(root).parts if path.is_absolute() else path.parts
+    if not rel_parts or any(part in {"", ".", ".."} for part in rel_parts):
+        raise ValueError(f"invalid or escaping JSON path: {path}")
+    cur_fd = os.open(root, os.O_RDONLY | o_directory | o_nofollow)
+    try:
+        for segment in rel_parts[:-1]:
+            try:
+                next_fd = os.open(segment, os.O_RDONLY | o_directory | o_nofollow, dir_fd=cur_fd)
+            except OSError as exc:
+                if exc.errno == errno.ELOOP or (
+                    exc.errno == errno.ENOTDIR
+                    and stat.S_ISLNK(os.lstat(segment, dir_fd=cur_fd).st_mode)
+                ):
+                    raise ValueError(f"symlink JSON input is forbidden: {path}") from exc
+                raise
+            os.close(cur_fd)
+            cur_fd = next_fd
+        try:
+            leaf_fd = os.open(rel_parts[-1], os.O_RDONLY | o_nofollow, dir_fd=cur_fd)
+        except OSError as exc:
+            if exc.errno == errno.ELOOP:
+                raise ValueError(f"symlink JSON input is forbidden: {path}") from exc
+            raise
+        try:
+            if not stat.S_ISREG(os.fstat(leaf_fd).st_mode):
+                raise ValueError(f"JSON input must be a regular file: {path}")
+            with os.fdopen(leaf_fd, "rb") as stream:
+                leaf_fd = -1
+                return stream.read()
+        finally:
+            if leaf_fd >= 0:
+                os.close(leaf_fd)
+    finally:
+        os.close(cur_fd)
+
+
 def strict_load_json(path: Path, *, root: Path | None = None) -> Any:
     """Load UTF-8 JSON without following symlinks or accepting duplicate/NaN tokens."""
-    if has_symlink_component(path, stop_at=root):
-        raise ValueError(f"symlink JSON input is forbidden: {path}")
-    fd = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
-    try:
-        if not stat.S_ISREG(os.fstat(fd).st_mode):
-            raise ValueError(f"JSON input must be a regular file: {path}")
-        with os.fdopen(fd, "rb") as stream:
-            fd = -1
-            raw = stream.read().decode("utf-8")
-    finally:
-        if fd >= 0:
-            os.close(fd)
+    raw = _read_regular_bytes(path, root=root).decode("utf-8")
     return json.loads(
         raw,
         object_pairs_hook=_reject_duplicate_keys,

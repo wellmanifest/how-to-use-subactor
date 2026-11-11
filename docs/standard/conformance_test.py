@@ -119,6 +119,54 @@ class ConformanceTest(unittest.TestCase):
             with self.assertRaises((OSError, ValueError)):
                 conformance.digest(sym)
 
+            outside = root.parent / f"{root.name}-outside"
+            outside.mkdir(exist_ok=True)
+            try:
+                target = outside / "target.json"
+                target.write_text('{"id": "escaped"}\n', encoding="utf-8")
+                ancestor_sym = root / "linked_dir"
+                ancestor_sym.symlink_to(outside, target_is_directory=True)
+                with self.assertRaises(ValueError):
+                    conformance.load_json(ancestor_sym / "target.json", root=root)
+                with self.assertRaises(ValueError):
+                    conformance.digest(ancestor_sym / "target.json", root=root)
+                with self.assertRaises(ValueError):
+                    conformance.load_json(Path("../target.json"), root=root)
+            finally:
+                for child in outside.glob("*"):
+                    child.unlink()
+                outside.rmdir()
+
+    def test_schema_parity_rejects_bool_versions_bad_enums_and_malformed_discovery(self) -> None:
+        iface = copy.deepcopy(conformance.load_json(conformance.ROOT / "docs/profiles/founder-cli.v1.json"))
+        iface["version"] = True
+        iface["status"] = "invalid"
+        iface["runtime"]["observedVersion"] = ""
+        iface["operations"][0]["effect"] = "kernel_write"
+        iface_failures: list[dict[str, str]] = []
+        conformance.validate_interface(iface, "fixture", iface_failures)
+        iface_codes = {item["code"] for item in iface_failures}
+        self.assertIn("USAGE-PROFILE-001", iface_codes)
+        self.assertIn("USAGE-COMPAT-001", iface_codes)
+        self.assertIn("USAGE-OPERATION-001", iface_codes)
+
+        proj = copy.deepcopy(conformance.load_json(conformance.ROOT / "docs/profiles/project-development.v1.json"))
+        proj["version"] = False
+        proj["projectRef"] = "https://invalid"
+        proj["stages"][0]["onFailure"] = "ignore"
+        proj["completion"] = {"requires": proj["completion"]["requires"]}
+        proj_failures: list[dict[str, str]] = []
+        conformance.validate_project(proj, "fixture", proj_failures)
+        proj_codes = {item["code"] for item in proj_failures}
+        self.assertIn("USAGE-PROJECT-001", proj_codes)
+        self.assertIn("USAGE-STAGE-001", proj_codes)
+        self.assertIn("USAGE-COMPLETION-001", proj_codes)
+
+        discover_failures: list[dict[str, str]] = []
+        receipt = conformance.discover({"id": "bad", "executable": "subactor", "discovery": {"argv": [], "expectedCommands": [{}]}}, "fixture", discover_failures)
+        self.assertFalse(receipt["ok"])
+        self.assertIn("USAGE-DISCOVERY-001", {item["code"] for item in discover_failures})
+
     def test_remote_url_variants_resolve_to_same_identity(self) -> None:
         expected = ("github.com", "wellmanifest/how-to-use-subactor")
         self.assertEqual(
