@@ -6,13 +6,14 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
+import stat
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
-
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = ROOT / "docs" / "standard" / "manifest.v1.json"
@@ -23,17 +24,72 @@ SCHEMA_PATHS = (
 )
 
 
-def load_json(path: Path) -> Any:
-    with path.open(encoding="utf-8") as handle:
-        return json.load(handle)
+def _has_symlink_component(path: Path, *, root: Path | None = None) -> bool:
+    if path.is_symlink():
+        return True
+    if root is None:
+        return False
+    boundary = root.resolve()
+    current = path.parent
+    while current != boundary:
+        if current.is_symlink():
+            return True
+        if current.parent == current:
+            break
+        current = current.parent
+    return False
 
 
-def digest(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+def _read_regular_bytes(path: Path, *, root: Path | None = None) -> bytes:
+    if _has_symlink_component(path, root=root):
+        raise ValueError(f"symlink path is forbidden: {path}")
+    fd = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+    try:
+        if not stat.S_ISREG(os.fstat(fd).st_mode):
+            raise ValueError(f"path is not a regular file: {path}")
+        with os.fdopen(fd, "rb") as handle:
+            fd = -1
+            return handle.read()
+    finally:
+        if fd >= 0:
+            os.close(fd)
 
 
-def exact_keys(document: dict[str, Any], required: set[str], optional: set[str] = set()) -> bool:
-    return set(document) == required | (set(document) & optional)
+def _reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    obj: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in obj:
+            raise ValueError(f"duplicate JSON key: {key!r}")
+        obj[key] = value
+    return obj
+
+
+def _reject_nonfinite_constant(token: str) -> Any:
+    raise ValueError(f"non-finite JSON constant is forbidden: {token}")
+
+
+def load_json(path: Path, *, root: Path | None = None) -> Any:
+    return json.loads(
+        _read_regular_bytes(path, root=root).decode("utf-8"),
+        object_pairs_hook=_reject_duplicate_keys,
+        parse_constant=_reject_nonfinite_constant,
+    )
+
+
+def digest(path: Path, *, root: Path | None = None) -> str:
+    return hashlib.sha256(_read_regular_bytes(path, root=root)).hexdigest()
+
+
+def exact_keys(document: Any, required: set[str], optional: set[str] | None = None) -> bool:
+    if not isinstance(document, dict):
+        return False
+    return set(document) == required | (set(document) & (optional or set()))
+
+
+def _string_list(value: Any) -> list[str] | None:
+    if isinstance(value, list) and all(isinstance(item, str) and bool(item) for item in value):
+        return value
+    return None
 
 
 def add(failures: list[dict[str, str]], code: str, path: str, message: str) -> None:
@@ -42,23 +98,17 @@ def add(failures: list[dict[str, str]], code: str, path: str, message: str) -> N
 
 def parse_repository_remote(remote_url: str) -> tuple[str, str]:
     """Return a credential-free host and owner/repository reference."""
-    host = ""
-    remote_path = ""
     if "://" in remote_url:
         parsed = urlsplit(remote_url)
         if parsed.scheme not in {"https", "http", "ssh", "git"} or not parsed.hostname:
             raise ValueError("remote must use an authenticated network Git transport")
-        host = parsed.hostname.lower()
-        remote_path = parsed.path
+        host, remote_path = parsed.hostname.lower(), parsed.path
     else:
         match = re.fullmatch(r"(?:[^@/:]+@)?([^/:]+):(.+)", remote_url)
         if not match:
             raise ValueError("remote must be an absolute network URL or SCP-style Git URL")
-        host, remote_path = match.groups()
-        host = host.lower()
-    repository_ref = remote_path.strip("/")
-    if repository_ref.endswith(".git"):
-        repository_ref = repository_ref[:-4]
+        host, remote_path = match.group(1).lower(), match.group(2)
+    repository_ref = remote_path.strip("/").removesuffix(".git")
     segments = repository_ref.split("/")
     if len(segments) < 2 or any(not segment or segment in {".", ".."} for segment in segments):
         raise ValueError("remote path must contain an owner and repository")
@@ -89,11 +139,7 @@ def inspect_repository_identity(
     top_level_result = run_git(requested_path, "rev-parse", "--show-toplevel")
     if top_level_result.returncode != 0:
         add(failures, "USAGE-REPOSITORY-GIT-001", str(requested_path), "path is not a Git worktree")
-        return {
-            "schema": "wellmanifest.repository-identity/inspection/v1",
-            "valid": False,
-            "failures": failures,
-        }
+        return {"schema": "wellmanifest.repository-identity/inspection/v1", "valid": False, "failures": failures}
     checkout_path = Path(top_level_result.stdout.strip()).resolve()
     remote_result = run_git(checkout_path, "remote", "get-url", remote_name)
     repository_host: str | None = None
@@ -106,19 +152,9 @@ def inspect_repository_identity(
         except ValueError as error:
             add(failures, "USAGE-REPOSITORY-REMOTE-002", remote_name, str(error))
     if expected_ref and repository_ref and repository_ref != expected_ref:
-        add(
-            failures,
-            "USAGE-REPOSITORY-REF-001",
-            remote_name,
-            f"remote resolves to {repository_ref}, expected {expected_ref}",
-        )
+        add(failures, "USAGE-REPOSITORY-REF-001", remote_name, f"remote resolves to {repository_ref}, expected {expected_ref}")
     if expected_host and repository_host and repository_host != expected_host.lower():
-        add(
-            failures,
-            "USAGE-REPOSITORY-HOST-001",
-            remote_name,
-            f"remote resolves to {repository_host}, expected {expected_host.lower()}",
-        )
+        add(failures, "USAGE-REPOSITORY-HOST-001", remote_name, f"remote resolves to {repository_host}, expected {expected_host.lower()}")
     resolved_workspace_root = workspace_root.resolve() if workspace_root else None
     expected_path = (
         resolved_workspace_root.joinpath(*repository_ref.split("/"))
@@ -134,11 +170,7 @@ def inspect_repository_identity(
     ]
     primary_checkout_path = worktree_paths[0] if worktree_paths else checkout_path
     checkout_kind = "primary" if checkout_path == primary_checkout_path else "linked"
-    linked_worktree_count = (
-        len(worktree_paths)
-        if worktree_result.returncode == 0
-        else None
-    )
+    linked_worktree_count = len(worktree_paths) if worktree_result.returncode == 0 else None
     dirty = status_result.returncode != 0 or bool(status_result.stdout.strip())
     placement_conformant = primary_checkout_path == expected_path if expected_path else None
     if placement_conformant is False:
@@ -186,36 +218,45 @@ def validate_interface(profile: dict[str, Any], path: str, failures: list[dict[s
         return
     if profile["schema"] != "wellmanifest.subactor-usage/interface-profile/v1":
         add(failures, "USAGE-PROFILE-002", path, "unexpected interface schema")
-    runtime = profile.get("runtime", {})
-    if not re.fullmatch(r"[0-9a-f]{40}", str(runtime.get("revision", ""))):
+    runtime = profile.get("runtime")
+    revision = runtime.get("revision", "") if isinstance(runtime, dict) else ""
+    if not isinstance(revision, str) or not re.fullmatch(r"[0-9a-f]{40}", revision):
         add(failures, "USAGE-COMPAT-001", path, "runtime revision must be an exact Git SHA")
-    discovery = profile.get("discovery", {})
-    argv = discovery.get("argv", [])
-    expected = discovery.get("expectedCommands", [])
-    if not argv or argv[0] != profile.get("executable") or len(expected) != len(set(expected)):
+    discovery = profile.get("discovery")
+    argv = _string_list(discovery.get("argv")) if isinstance(discovery, dict) else None
+    expected = _string_list(discovery.get("expectedCommands")) if isinstance(discovery, dict) else None
+    if not argv or not expected or argv[0] != profile.get("executable") or len(expected) != len(set(expected)):
         add(failures, "USAGE-DISCOVERY-001", path, "discovery must bind the executable and unique command catalog")
+    expected_set = set(expected) if expected else set()
+    operations = profile.get("operations")
+    if not isinstance(operations, list):
+        add(failures, "USAGE-OPERATION-001", path, "operations must be a list")
+        return
     operation_ids: set[str] = set()
-    for index, operation in enumerate(profile.get("operations", [])):
+    for index, operation in enumerate(operations):
         operation_path = f"{path}#/operations/{index}"
         operation_required = {"id", "command", "effect", "authority", "requiredEvidence"}
         if not exact_keys(operation, operation_required, {"requiredFlags"}):
             add(failures, "USAGE-OPERATION-001", operation_path, "operation must be closed")
             continue
-        if operation["id"] in operation_ids:
+        op_id, op_cmd = operation["id"], operation["command"]
+        evidence_list = _string_list(operation["requiredEvidence"])
+        if not isinstance(op_id, str) or not op_id or not isinstance(op_cmd, str) or evidence_list is None:
+            add(failures, "USAGE-OPERATION-001", operation_path, "operation fields must be typed strings")
+            continue
+        if op_id in operation_ids:
             add(failures, "USAGE-OPERATION-002", operation_path, "operation id must be unique")
-        operation_ids.add(operation["id"])
-        if operation["command"] not in expected:
+        operation_ids.add(op_id)
+        if expected is not None and op_cmd not in expected_set:
             add(failures, "USAGE-DISCOVERY-002", operation_path, "operation command is absent from discovery catalog")
+        evidence = set(evidence_list)
         if operation["effect"] == "external_write":
             if operation["authority"] not in {"apply", "autonomous"}:
                 add(failures, "USAGE-AUTHORITY-001", operation_path, "external write requires apply or autonomous authority")
-            evidence = set(operation["requiredEvidence"])
             if not {"plan_hash", "execution_receipt", "independent_readback"}.issubset(evidence):
                 add(failures, "USAGE-EVIDENCE-001", operation_path, "external write lacks bound execution evidence")
-        if operation["authority"] == "autonomous":
-            evidence = set(operation["requiredEvidence"])
-            if not {"contract_ref", "contract_bounds_readback"}.issubset(evidence):
-                add(failures, "USAGE-AUTHORITY-005", operation_path, "autonomous authority lacks verified contract evidence")
+        if operation["authority"] == "autonomous" and not {"contract_ref", "contract_bounds_readback"}.issubset(evidence):
+            add(failures, "USAGE-AUTHORITY-005", operation_path, "autonomous authority lacks verified contract evidence")
 
 
 def validate_project(profile: dict[str, Any], path: str, failures: list[dict[str, str]]) -> None:
@@ -229,31 +270,42 @@ def validate_project(profile: dict[str, Any], path: str, failures: list[dict[str
     for forbidden in ('"command"', '"argv"', '"secret"'):
         if forbidden in serialized:
             add(failures, "USAGE-PROJECT-003", path, f"project profile contains forbidden executable or secret field {forbidden}")
+    stages = profile.get("stages")
+    if not isinstance(stages, list):
+        add(failures, "USAGE-STAGE-001", path, "stages must be a list")
+        return
     stage_ids: set[str] = set()
-    for index, stage in enumerate(profile.get("stages", [])):
+    for index, stage in enumerate(stages):
         stage_path = f"{path}#/stages/{index}"
         required_stage = {"id", "intentId", "operation", "effect", "authority", "requiredInputs", "requiredEvidence", "onFailure"}
         if not exact_keys(stage, required_stage):
             add(failures, "USAGE-STAGE-001", stage_path, "stage must be closed")
             continue
-        if stage["id"] in stage_ids:
+        stage_id = stage["id"]
+        inputs_list = _string_list(stage["requiredInputs"])
+        evidence_list = _string_list(stage["requiredEvidence"])
+        if not isinstance(stage_id, str) or not stage_id or inputs_list is None or evidence_list is None:
+            add(failures, "USAGE-STAGE-001", stage_path, "stage id, inputs and evidence must be strings")
+            continue
+        if stage_id in stage_ids:
             add(failures, "USAGE-STAGE-002", stage_path, "stage id must be unique")
-        stage_ids.add(stage["id"])
+        stage_ids.add(stage_id)
+        inputs, evidence = set(inputs_list), set(evidence_list)
         if stage["effect"] in {"external_write", "hardware_write"} and stage["authority"] not in {"apply", "autonomous"}:
             add(failures, "USAGE-AUTHORITY-002", stage_path, "external and hardware writes require apply or autonomous authority")
         if stage["effect"] == "local_write" and stage["authority"] not in {"plan", "apply", "autonomous"}:
             add(failures, "USAGE-AUTHORITY-004", stage_path, "local writes require plan, apply or autonomous authority")
         if stage["effect"] == "hardware_write" and stage["authority"] != "apply":
             add(failures, "USAGE-AUTHORITY-006", stage_path, "hardware write must not run under a standing autonomy contract")
-        if stage["effect"] in {"external_write", "hardware_write"}:
-            inputs = set(stage["requiredInputs"])
-            if not {"plan_hash", "grant_ref"}.issubset(inputs):
-                add(failures, "USAGE-AUTHORITY-003", stage_path, "external or hardware write lacks plan/grant binding")
-        if stage["authority"] == "autonomous" and "contract_ref" not in set(stage["requiredInputs"]):
+        if stage["effect"] in {"external_write", "hardware_write"} and not {"plan_hash", "grant_ref"}.issubset(inputs):
+            add(failures, "USAGE-AUTHORITY-003", stage_path, "external or hardware write lacks plan/grant binding")
+        if stage["authority"] == "autonomous" and "contract_ref" not in inputs:
             add(failures, "USAGE-AUTHORITY-005", stage_path, "autonomous stage lacks a bounded contract reference")
-        if stage["effect"] == "hardware_write" and "device_identity_readback" not in stage["requiredEvidence"]:
+        if stage["effect"] == "hardware_write" and "device_identity_readback" not in evidence:
             add(failures, "USAGE-HARDWARE-001", stage_path, "hardware write lacks device identity readback")
-    required_completion = set(profile.get("completion", {}).get("requires", []))
+    completion = profile.get("completion")
+    requires_list = _string_list(completion.get("requires")) if isinstance(completion, dict) else None
+    required_completion = set(requires_list) if requires_list is not None else set()
     if not {"test_receipt", "independent_runtime_readback", "acceptance_eql"}.issubset(required_completion):
         add(failures, "USAGE-COMPLETION-001", path, "completion contract lacks independent proof")
 
@@ -266,7 +318,11 @@ def discover(profile: dict[str, Any], path: str, failures: list[dict[str, str]])
         add(failures, "USAGE-DISCOVERY-003", path, f"discovery failed: {error}")
         return {"profile": profile["id"], "ok": False}
     output = result.stdout + result.stderr
-    missing = [command for command in profile["discovery"]["expectedCommands"] if not re.search(rf"(?<![a-z0-9-]){re.escape(command)}(?![a-z0-9-])", output)]
+    missing = [
+        command
+        for command in profile["discovery"]["expectedCommands"]
+        if not re.search(rf"(?<![a-z0-9-]){re.escape(command)}(?![a-z0-9-])", output)
+    ]
     if result.returncode != 0 or missing:
         add(failures, "USAGE-DISCOVERY-004", path, f"CLI catalog mismatch; rc={result.returncode}, missing={missing}")
     if profile["executable"] == "subactor-shell":
@@ -281,11 +337,26 @@ def check(*, run_discovery: bool) -> dict[str, Any]:
     failures: list[dict[str, str]] = []
     for schema_path in SCHEMA_PATHS:
         try:
-            load_json(schema_path)
-        except (OSError, json.JSONDecodeError) as error:
+            load_json(schema_path, root=ROOT)
+        except (OSError, UnicodeDecodeError, ValueError) as error:
             add(failures, "USAGE-SCHEMA-001", str(schema_path.relative_to(ROOT)), str(error))
-    manifest = load_json(MANIFEST_PATH)
-    version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    version = _read_regular_bytes(ROOT / "VERSION", root=ROOT).decode("utf-8").strip()
+    try:
+        manifest = load_json(MANIFEST_PATH, root=ROOT)
+    except (OSError, UnicodeDecodeError, ValueError) as error:
+        add(failures, "USAGE-MANIFEST-001", "docs/standard/manifest.v1.json", str(error))
+        return {
+            "schema": "wellmanifest.subactor-usage/conformance-result/v1",
+            "valid": False,
+            "version": version,
+            "artifactsChecked": 0,
+            "discoveryExecuted": False,
+            "discovery": [],
+            "failures": failures,
+        }
+    if not isinstance(manifest, dict):
+        add(failures, "USAGE-MANIFEST-001", "docs/standard/manifest.v1.json", "manifest must be an object")
+        manifest = {}
     if manifest.get("version") != version:
         add(failures, "USAGE-VERSION-001", "docs/standard/manifest.v1.json", "manifest and VERSION differ")
     required_manifest = {"schema", "id", "version", "status", "home", "shape", "runtimeOwner", "communicationSpecification", "artifacts"}
@@ -294,20 +365,42 @@ def check(*, run_discovery: bool) -> dict[str, Any]:
     seen_ids: set[str] = set()
     interface_profiles: list[tuple[dict[str, Any], str]] = []
     artifacts_checked = 0
-    for artifact in manifest.get("artifacts", []):
-        path = str(artifact.get("path", ""))
-        artifact_path = (ROOT / path).resolve()
+    raw_artifacts = manifest.get("artifacts")
+    if not isinstance(raw_artifacts, list):
+        add(failures, "USAGE-MANIFEST-001", "docs/standard/manifest.v1.json", "artifacts must be a list")
+        raw_artifacts = []
+    for artifact in raw_artifacts:
+        if not isinstance(artifact, dict):
+            add(failures, "USAGE-ARTIFACT-001", "", "artifact entry must be an object")
+            continue
+        raw_path = artifact.get("path")
+        path = raw_path if isinstance(raw_path, str) else ""
+        candidate = ROOT / path if path else ROOT
+        if not path or _has_symlink_component(candidate, root=ROOT):
+            add(failures, "USAGE-ARTIFACT-001", path, "artifact path is missing or symlinked")
+            continue
+        artifact_path = candidate.resolve()
         if ROOT not in artifact_path.parents or not artifact_path.is_file():
             add(failures, "USAGE-ARTIFACT-001", path, "artifact path is missing or outside repository")
             continue
-        if artifact.get("id") in seen_ids:
+        artifact_id = artifact.get("id")
+        if not isinstance(artifact_id, str) or not artifact_id:
+            add(failures, "USAGE-ARTIFACT-002", path, "artifact id must be a non-empty string")
+            continue
+        if artifact_id in seen_ids:
             add(failures, "USAGE-ARTIFACT-002", path, "artifact id must be unique")
-        seen_ids.add(artifact.get("id"))
-        if digest(artifact_path) != artifact.get("sha256"):
+        seen_ids.add(artifact_id)
+        try:
+            actual_digest = digest(artifact_path, root=ROOT)
+            profile = load_json(artifact_path, root=ROOT)
+        except (OSError, UnicodeDecodeError, ValueError) as error:
+            add(failures, "USAGE-ARTIFACT-001", path, str(error))
+            continue
+        if actual_digest != artifact.get("sha256"):
             add(failures, "USAGE-ARTIFACT-003", path, "artifact digest mismatch")
-        profile = load_json(artifact_path)
-        if profile.get("id") != artifact.get("id"):
+        if not isinstance(profile, dict) or profile.get("id") != artifact_id:
             add(failures, "USAGE-ARTIFACT-004", path, "manifest and profile ids differ")
+            continue
         if artifact.get("kind") == "interface-profile":
             validate_interface(profile, path, failures)
             interface_profiles.append((profile, path))

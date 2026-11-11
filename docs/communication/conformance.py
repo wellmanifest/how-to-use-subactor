@@ -5,103 +5,83 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
-
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent
+try:
+    import runtime_conformance as _rt
+except ModuleNotFoundError:  # pragma: no cover - spec_from_file_location fallback
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    import runtime_conformance as _rt
+
+URI_REF_RE = _rt.URI_REF_RE
+UTC_INSTANT_RE = _rt.UTC_INSTANT_RE
+exact_string_set = _rt.exact_string_set
+finding = _rt.finding
+forbidden_keys = _rt.forbidden_keys
+is_uri_ref = _rt.is_uri_ref
+list_at = _rt.list_at
+non_empty_str = _rt.non_empty_str
+object_at = _rt.object_at
+require = _rt.require
+strict_load_json = _rt.strict_load_json
+strict_positive_int = _rt.strict_positive_int
+string_set = _rt.string_set
+utc_instant = _rt.utc_instant
+validate_identity = _rt.validate_identity
+validate_runtime = _rt.validate_runtime
+
 SCHEMAS = (
     ROOT / "delegation-envelope.schema.v1.json",
     ROOT / "runtime-event.schema.v1.json",
     ROOT / "runtime-event.schema.v2.json",
     ROOT / "mcp-tool-contract.schema.v1.json",
 )
-GENERIC_MCP_NAMES = {
-    "run_shell",
-    "shell",
-    "run_uri",
-    "call_connector",
-    "execute_any",
-    "invoke",
+GENERIC_MCP_NAMES = {"run_shell", "shell", "run_uri", "call_connector", "execute_any", "invoke"}
+DELEGATION_MODES = {"observe", "plan", "dry_run", "apply", "autonomous"}
+SENDER_KINDS = {"human", "llm_agent", "mcp_client"}
+SENDER_ROLES = {"founder", "supervisor", "observer"}
+TRANSPORT_KINDS = {"cli", "rest", "web", "mcp", "artifact"}
+EFFECT_REVERSIBILITY = {"none", "reversible", "irreversible"}
+BASE_DELEGATION_EVIDENCE = {"ticket", "process_uri", "plan_hash", "events", "receipts", "readback"}
+ALLOWED_DELEGATION_EVIDENCE = BASE_DELEGATION_EVIDENCE | {"eql", "contract_bounds_readback"}
+MCP_OPERATION_CLASSES = {
+    "observe_state",
+    "delegate_outcome",
+    "inspect_plan",
+    "approve_plan",
+    "execute_contract",
+    "read_receipt",
 }
-URI_REF_RE = re.compile(r"^[a-z][a-z0-9+.-]*://[^\s]+$")
-UTC_INSTANT_RE = re.compile(r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.\d+)?Z$")
 
-
-def finding(code: str, path: str, message: str) -> dict[str, str]:
-    return {"code": code, "path": path, "message": message}
-
-
-def require(
-    condition: bool,
-    findings: list[dict[str, str]],
-    code: str,
-    path: str,
-    message: str,
-) -> None:
-    if not condition:
-        findings.append(finding(code, path, message))
-
-
-def object_at(value: Any, key: str) -> dict[str, Any]:
-    if isinstance(value, dict) and isinstance(value.get(key), dict):
-        return value[key]
-    return {}
-
-
-def list_at(value: Any, key: str) -> list[Any]:
-    if isinstance(value, dict) and isinstance(value.get(key), list):
-        return value[key]
-    return []
-
-
-def is_uri_ref(value: Any) -> bool:
-    return isinstance(value, str) and URI_REF_RE.fullmatch(value) is not None
-
-
-def utc_instant(value: Any) -> str | None:
-    """Return a second-precision UTC instant that sorts lexicographically."""
-    if not isinstance(value, str):
-        return None
-    match = UTC_INSTANT_RE.fullmatch(value)
-    return match.group(1) if match else None
-
-
-def exact_string_set(values: list[Any], expected: set[str]) -> bool:
-    return (
-        bool(values)
-        and all(isinstance(value, str) for value in values)
-        and len(values) == len(set(values))
-        and set(values) == expected
-    )
-
-
-def forbidden_keys(value: Any, names: set[str], prefix: str = "$") -> list[str]:
-    result: list[str] = []
-    if isinstance(value, dict):
-        for key, child in value.items():
-            path = f"{prefix}.{key}"
-            if key in names:
-                result.append(path)
-            result.extend(forbidden_keys(child, names, path))
-    elif isinstance(value, list):
-        for index, child in enumerate(value):
-            result.extend(forbidden_keys(child, names, f"{prefix}[{index}]"))
-    return result
-
-
-def validate_identity(document: Any, findings: list[dict[str, str]]) -> None:
-    target = object_at(document, "target")
-    require(
-        target.get("system") == "subactor"
-        and target.get("class") == "autonomous_system",
-        findings,
-        "COMM-IDENTITY-001",
-        "$.target",
-        "target must identify Subactor as an autonomous_system",
-    )
+__all__ = [
+    "GENERIC_MCP_NAMES",
+    "ROOT",
+    "SCHEMAS",
+    "URI_REF_RE",
+    "UTC_INSTANT_RE",
+    "VALIDATORS",
+    "emit",
+    "exact_string_set",
+    "finding",
+    "forbidden_keys",
+    "is_uri_ref",
+    "list_at",
+    "load_json",
+    "main",
+    "object_at",
+    "require",
+    "self_test",
+    "utc_instant",
+    "validate_delegation",
+    "validate_identity",
+    "validate_mcp",
+    "validate_runtime",
+]
 
 
 def validate_delegation(document: Any) -> list[dict[str, str]]:
@@ -110,25 +90,43 @@ def validate_delegation(document: Any) -> list[dict[str, str]]:
         return [finding("COMM-SHAPE-001", "$", "document must be an object")]
 
     require(
-        document.get("schema")
-        == "wellmanifest.subactor-communication/delegation-envelope/v1",
+        document.get("schema") == "wellmanifest.subactor-communication/delegation-envelope/v1",
         findings,
         "COMM-SHAPE-001",
         "$.schema",
         "unexpected delegation schema identifier",
     )
+    require(
+        non_empty_str(document.get("messageId")),
+        findings,
+        "COMM-SHAPE-001",
+        "$.messageId",
+        "delegation envelope requires a non-empty messageId",
+    )
+    sender = object_at(document, "sender")
+    require(
+        isinstance(document.get("sender"), dict)
+        and sender.get("kind") in SENDER_KINDS
+        and sender.get("role") in SENDER_ROLES,
+        findings,
+        "COMM-SHAPE-001",
+        "$.sender",
+        "sender must declare valid kind and role",
+    )
     validate_identity(document, findings)
 
     intent = object_at(document, "intent")
     require(
-        isinstance(intent.get("outcome"), str) and bool(intent.get("outcome", "").strip()),
+        non_empty_str(intent.get("outcome")),
         findings,
         "COMM-OWNERSHIP-001",
         "$.intent.outcome",
         "delegate an outcome instead of worker instructions",
     )
+    scope_ok, scope_items = string_set(intent.get("scope"))
+    acceptance_ok, acceptance_items = string_set(intent.get("acceptance"))
     require(
-        bool(list_at(intent, "scope")) and bool(list_at(intent, "acceptance")),
+        scope_ok and bool(scope_items) and acceptance_ok and bool(acceptance_items),
         findings,
         "COMM-EVIDENCE-001",
         "$.intent",
@@ -147,8 +145,7 @@ def validate_delegation(document: Any) -> list[dict[str, str]]:
         "Subactor must own decomposition and execution; supervisor bypass is forbidden",
     )
     for path in forbidden_keys(
-        document,
-        {"tasks", "workerPrompts", "subagents", "serviceCommands", "packageCommands"},
+        document, {"tasks", "workerPrompts", "subagents", "serviceCommands", "packageCommands"}
     ):
         findings.append(
             finding(
@@ -159,6 +156,13 @@ def validate_delegation(document: Any) -> list[dict[str, str]]:
         )
 
     transport = object_at(document, "transport")
+    require(
+        isinstance(document.get("transport"), dict) and transport.get("kind") in TRANSPORT_KINDS,
+        findings,
+        "COMM-SHAPE-001",
+        "$.transport.kind",
+        "transport kind must be cli, rest, web, mcp or artifact",
+    )
     require(
         transport.get("grantsAuthority") is False
         and subllm.get("role") == "internal_model_routing"
@@ -178,9 +182,16 @@ def validate_delegation(document: Any) -> list[dict[str, str]]:
         "authority must be resolved by Subactor Control",
     )
     mode = authority.get("mode")
+    require(
+        mode in DELEGATION_MODES,
+        findings,
+        "COMM-AUTHORITY-001",
+        "$.authority.mode",
+        "authority mode must be observe, plan, dry_run, apply or autonomous",
+    )
     if mode == "apply":
         require(
-            bool(authority.get("grantRef")) and bool(authority.get("planHash")),
+            non_empty_str(authority.get("grantRef")) and non_empty_str(authority.get("planHash")),
             findings,
             "COMM-AUTHORITY-002",
             "$.authority",
@@ -188,7 +199,7 @@ def validate_delegation(document: Any) -> list[dict[str, str]]:
         )
     if mode == "autonomous":
         require(
-            bool(authority.get("contractRef")) and bool(authority.get("planHash")),
+            non_empty_str(authority.get("contractRef")) and non_empty_str(authority.get("planHash")),
             findings,
             "COMM-AUTHORITY-003",
             "$.authority",
@@ -197,16 +208,20 @@ def validate_delegation(document: Any) -> list[dict[str, str]]:
         bounds = object_at(authority, "contractBounds")
         verified_at = utc_instant(bounds.get("verifiedAt"))
         expires_at = utc_instant(bounds.get("expiresAt"))
-        remaining = bounds.get("remainingExecutions")
+        allowed_ops_raw = bounds.get("allowedOperations")
+        ops_ok, ops_set = string_set(allowed_ops_raw)
+        max_steps_ok = "maxSteps" not in bounds or strict_positive_int(bounds.get("maxSteps"))
         require(
             bounds.get("withinBounds") is True
             and verified_at is not None
             and expires_at is not None
             and verified_at < expires_at
-            and isinstance(remaining, int)
-            and not isinstance(remaining, bool)
-            and remaining > 0
-            and bool(list_at(bounds, "allowedOperations")),
+            and strict_positive_int(bounds.get("remainingExecutions"))
+            and max_steps_ok
+            and ops_ok
+            and bool(ops_set)
+            and isinstance(allowed_ops_raw, list)
+            and len(ops_set) == len(allowed_ops_raw),
             findings,
             "COMM-CONTRACT-001",
             "$.authority.contractBounds",
@@ -215,7 +230,7 @@ def validate_delegation(document: Any) -> list[dict[str, str]]:
         readiness = object_at(document, "readiness")
         require(
             readiness.get("boundedAutonomyReady") is True
-            and bool(readiness.get("autonomyControlRef"))
+            and non_empty_str(readiness.get("autonomyControlRef"))
             and utc_instant(readiness.get("observedAt")) is not None,
             findings,
             "COMM-READINESS-001",
@@ -223,35 +238,48 @@ def validate_delegation(document: Any) -> list[dict[str, str]]:
             "autonomous delegation requires an observed bounded-autonomy readiness preflight",
         )
 
-    for index, effect in enumerate(list_at(document, "effects")):
-        if not isinstance(effect, dict):
-            findings.append(
-                finding("COMM-SHAPE-001", f"$.effects[{index}]", "effect must be an object")
-            )
-            continue
-        reversibility = effect.get("reversibility")
-        if reversibility == "reversible":
+    raw_effects = document.get("effects")
+    if not isinstance(raw_effects, list):
+        findings.append(finding("COMM-SHAPE-001", "$.effects", "effects must be an array"))
+    else:
+        for index, effect in enumerate(raw_effects):
+            if not isinstance(effect, dict):
+                findings.append(finding("COMM-SHAPE-001", f"$.effects[{index}]", "effect must be an object"))
+                continue
+            reversibility = effect.get("reversibility")
             require(
-                bool(effect.get("rollbackRef")) or bool(effect.get("compensationRef")),
+                non_empty_str(effect.get("effect")) and reversibility in EFFECT_REVERSIBILITY,
                 findings,
-                "COMM-EFFECT-001",
+                "COMM-SHAPE-001",
                 f"$.effects[{index}]",
-                "reversible effect requires rollbackRef or compensationRef",
+                "effect requires non-empty description and reversibility enum",
             )
-        if reversibility == "irreversible":
-            require(
-                effect.get("requiresHigherAuthority") is True
-                and bool(effect.get("higherAuthorityApprovalRef")),
-                findings,
-                "COMM-EFFECT-002",
-                f"$.effects[{index}]",
-                "irreversible effect requires a higher-authority approval reference",
-            )
+            if reversibility == "reversible":
+                require(
+                    non_empty_str(effect.get("rollbackRef")) or non_empty_str(effect.get("compensationRef")),
+                    findings,
+                    "COMM-EFFECT-001",
+                    f"$.effects[{index}]",
+                    "reversible effect requires rollbackRef or compensationRef",
+                )
+            if reversibility == "irreversible":
+                require(
+                    effect.get("requiresHigherAuthority") is True
+                    and non_empty_str(effect.get("higherAuthorityApprovalRef")),
+                    findings,
+                    "COMM-EFFECT-002",
+                    f"$.effects[{index}]",
+                    "irreversible effect requires a higher-authority approval reference",
+                )
 
-    required_evidence = set(list_at(object_at(document, "evidence"), "required"))
+    raw_required = object_at(document, "evidence").get("required")
+    ev_ok, required_evidence = string_set(raw_required)
+    ev_unique = isinstance(raw_required, list) and len(required_evidence) == len(raw_required)
     require(
-        {"ticket", "process_uri", "plan_hash", "events", "receipts", "readback"}
-        <= required_evidence,
+        ev_ok
+        and ev_unique
+        and required_evidence <= ALLOWED_DELEGATION_EVIDENCE
+        and BASE_DELEGATION_EVIDENCE <= required_evidence,
         findings,
         "COMM-EVIDENCE-001",
         "$.evidence.required",
@@ -259,202 +287,11 @@ def validate_delegation(document: Any) -> list[dict[str, str]]:
     )
     if mode == "autonomous":
         require(
-            "contract_bounds_readback" in required_evidence,
+            ev_ok and "contract_bounds_readback" in required_evidence,
             findings,
             "COMM-EVIDENCE-001",
             "$.evidence.required",
             "autonomous execution must require a contract bounds readback",
-        )
-    return findings
-
-
-def validate_runtime(document: Any) -> list[dict[str, str]]:
-    findings: list[dict[str, str]] = []
-    if not isinstance(document, dict):
-        return [finding("COMM-SHAPE-001", "$", "document must be an object")]
-
-    schema = document.get("schema")
-    require(
-        schema
-        in {
-            "wellmanifest.subactor-communication/runtime-event/v1",
-            "wellmanifest.subactor-communication/runtime-event/v2",
-        },
-        findings,
-        "COMM-SHAPE-001",
-        "$.schema",
-        "unexpected runtime-event schema identifier",
-    )
-    validate_identity(document, findings)
-    require(
-        bool(document.get("ticket")) and bool(document.get("correlationId")),
-        findings,
-        "COMM-EVIDENCE-001",
-        "$",
-        "runtime event must bind ticket and correlationId",
-    )
-
-    state = document.get("state")
-    queue = object_at(document, "queue")
-    plan = object_at(document, "plan")
-    admission = object_at(document, "admission")
-    bound_process_uris: set[str] = set()
-    bound_resource_uris: set[str] = set()
-
-    if schema == "wellmanifest.subactor-communication/runtime-event/v2":
-        processes = list_at(queue, "processes")
-        require(
-            bool(processes),
-            findings,
-            "POA-RESOURCE-BINDING-001",
-            "$.queue.processes",
-            "runtime-event v2 requires at least one exactly bound process",
-        )
-        for index, process in enumerate(processes):
-            path = f"$.queue.processes[{index}]"
-            if not isinstance(process, dict):
-                findings.append(
-                    finding("COMM-SHAPE-001", path, "queued process must be an object")
-                )
-                continue
-
-            process_uri = process.get("processUri")
-            actor_ref = process.get("actorRef")
-            operation = process.get("operation")
-            resources = list_at(process, "resources")
-            resource_uris: list[str] = []
-            resources_exact = bool(resources)
-            for resource_index, resource in enumerate(resources):
-                resource_path = f"{path}.resources[{resource_index}]"
-                if not isinstance(resource, dict):
-                    resources_exact = False
-                    findings.append(
-                        finding(
-                            "POA-RESOURCE-BINDING-001",
-                            resource_path,
-                            "resource binding must be an object",
-                        )
-                    )
-                    continue
-                resource_uri = resource.get("resourceUri")
-                registry_ref = resource.get("registryRef")
-                resource_exact = (
-                    resource.get("role") in {"source", "target", "scope"}
-                    and is_uri_ref(resource_uri)
-                    and is_uri_ref(registry_ref)
-                )
-                resources_exact = resources_exact and resource_exact
-                if isinstance(resource_uri, str):
-                    resource_uris.append(resource_uri)
-
-            resources_exact = (
-                resources_exact
-                and len(resource_uris) == len(resources)
-                and len(resource_uris) == len(set(resource_uris))
-            )
-            require(
-                is_uri_ref(process_uri)
-                and is_uri_ref(actor_ref)
-                and isinstance(operation, str)
-                and bool(operation.strip())
-                and process.get("effect") in {"observe", "mutate"}
-                and resources_exact,
-                findings,
-                "POA-RESOURCE-BINDING-001",
-                path,
-                "every process requires exact process, actor, operation and registered resource URI bindings",
-            )
-
-            if isinstance(process_uri, str):
-                require(
-                    process_uri not in bound_process_uris,
-                    findings,
-                    "POA-RESOURCE-BINDING-001",
-                    f"{path}.processUri",
-                    "process URI must be unique within one queue revision",
-                )
-                bound_process_uris.add(process_uri)
-            bound_resource_uris.update(resource_uris)
-
-            if process.get("effect") == "mutate":
-                grant = object_at(process, "grant")
-                grant_resource_uris = list_at(grant, "boundResourceUris")
-                grant_exact = (
-                    is_uri_ref(grant.get("grantRef"))
-                    and grant.get("boundActorRef") == actor_ref
-                    and grant.get("boundProcessUri") == process_uri
-                    and grant.get("boundOperation") == operation
-                    and exact_string_set(grant_resource_uris, set(resource_uris))
-                )
-                require(
-                    grant_exact,
-                    findings,
-                    "POA-GRANT-BINDING-001",
-                    f"{path}.grant",
-                    "mutation grant must bind the exact actor, process, operation and resource URI set",
-                )
-
-    executable = state in {"admitted", "running", "waiting_authority", "completed"}
-    if executable:
-        admitted = (
-            admission.get("decision") == "ADMITTED"
-            and admission.get("validatorIndependent") is True
-            and bool(admission.get("validatorRef"))
-            and bool(admission.get("receiptRef"))
-            and admission.get("boundTicket") == document.get("ticket")
-            and admission.get("boundQueueRevision") == queue.get("revision")
-            and admission.get("boundPlanHash") == plan.get("planHash")
-        )
-        if schema == "wellmanifest.subactor-communication/runtime-event/v2":
-            admission_process_uris = list_at(admission, "boundProcessUris")
-            admission_resource_uris = list_at(admission, "boundResourceUris")
-            admitted = (
-                admitted
-                and exact_string_set(admission_process_uris, bound_process_uris)
-                and exact_string_set(admission_resource_uris, bound_resource_uris)
-            )
-        require(
-            admitted,
-            findings,
-            "POA-ADMISSION-001",
-            "$.admission",
-            "execution requires independent admission bound to ticket, queue revision, planHash and every planned process/resource URI",
-        )
-
-    if admission.get("decision") == "REJECTED" or state == "replan_required":
-        replanned = (
-            state == "replan_required"
-            and isinstance(queue.get("revision"), int)
-            and isinstance(queue.get("previousRevision"), int)
-            and queue["revision"] > queue["previousRevision"]
-            and bool(plan.get("previousPlanHash"))
-            and plan.get("previousPlanHash") != plan.get("planHash")
-        )
-        require(
-            replanned,
-            findings,
-            "POA-REPLAN-001",
-            "$.queue|$.plan",
-            "rejection must produce a higher queue revision and a new plan hash in the same ticket",
-        )
-
-    if state == "completed":
-        evidence = object_at(document, "evidence")
-        readback = object_at(evidence, "readback")
-        complete = (
-            bool(list_at(evidence, "receipts"))
-            and evidence.get("source") in {"runtime", "control", "validator", "readback"}
-            and readback.get("passed") is True
-            and readback.get("method")
-            in {"independent_query", "eql", "target_system_receipt"}
-            and bool(readback.get("ref"))
-        )
-        require(
-            complete,
-            findings,
-            "POA-COMPLETION-001",
-            "$.evidence",
-            "completed requires receipts and independent readback, not an LLM claim",
         )
     return findings
 
@@ -465,26 +302,33 @@ def validate_mcp(document: Any) -> list[dict[str, str]]:
         return [finding("COMM-SHAPE-001", "$", "document must be an object")]
 
     require(
-        document.get("schema")
-        == "wellmanifest.subactor-communication/mcp-tool-contract/v1",
+        document.get("schema") == "wellmanifest.subactor-communication/mcp-tool-contract/v1",
         findings,
         "COMM-SHAPE-001",
         "$.schema",
         "unexpected MCP tool schema identifier",
     )
     validate_identity(document, findings)
-    name = str(document.get("name", "")).lower().replace("-", "_")
+    raw_name = document.get("name")
+    normalized_name = raw_name.strip().lower().replace("-", "_") if isinstance(raw_name, str) else ""
     require(
-        name not in GENERIC_MCP_NAMES
-        and not any(token in name for token in ("arbitrary_shell", "generic_uri", "any_connector")),
+        non_empty_str(raw_name)
+        and normalized_name not in GENERIC_MCP_NAMES
+        and not any(token in normalized_name for token in ("arbitrary_shell", "generic_uri", "any_connector")),
         findings,
         "MCP-CAPABILITY-001",
         "$.name",
         "MCP must expose a bounded semantic capability, not generic execution",
     )
     require(
-        isinstance(document.get("inputSchema"), dict)
-        and isinstance(document.get("outputSchema"), dict),
+        document.get("operationClass") in MCP_OPERATION_CLASSES,
+        findings,
+        "MCP-CAPABILITY-001",
+        "$.operationClass",
+        "MCP capability requires a declared operationClass",
+    )
+    require(
+        isinstance(document.get("inputSchema"), dict) and isinstance(document.get("outputSchema"), dict),
         findings,
         "MCP-CAPABILITY-001",
         "$.inputSchema|$.outputSchema",
@@ -498,8 +342,19 @@ def validate_mcp(document: Any) -> list[dict[str, str]]:
         "$",
         "MCP transport cannot grant authority; Subactor Control is the boundary",
     )
-    if document.get("mutates") is True:
-        bindings = object_at(document, "bindings")
+    mutates = document.get("mutates")
+    bindings = object_at(document, "bindings")
+    bindings_typed = isinstance(document.get("bindings"), dict) and all(
+        isinstance(bindings.get(key), bool) for key in ("ticket", "planHash", "grantRef")
+    )
+    require(
+        isinstance(mutates, bool) and bindings_typed,
+        findings,
+        "MCP-MUTATION-001",
+        "$.mutates|$.bindings",
+        "mutates and required bindings flags must be explicit booleans",
+    )
+    if mutates is True:
         require(
             all(bindings.get(key) is True for key in ("ticket", "planHash", "grantRef")),
             findings,
@@ -530,20 +385,27 @@ def emit(kind: str, source: str, findings: list[dict[str, str]]) -> int:
 
 
 def load_json(path: Path) -> Any:
-    with path.open("r", encoding="utf-8") as stream:
-        return json.load(stream)
+    return strict_load_json(path)
 
 
 def self_test() -> int:
     failures: list[str] = []
     for schema in SCHEMAS:
-        value = load_json(schema)
+        try:
+            value = strict_load_json(schema, root=ROOT)
+        except (OSError, UnicodeDecodeError, ValueError) as error:
+            failures.append(f"schema-error:{schema.name}:{error}")
+            continue
         if not isinstance(value, dict) or not value.get("$id"):
             failures.append(f"schema-invalid:{schema.name}")
 
     for fixture_name in ("valid.json", "invalid.json"):
         fixture_path = ROOT / "fixtures" / fixture_name
-        fixture = load_json(fixture_path)
+        try:
+            fixture = strict_load_json(fixture_path, root=ROOT)
+        except (OSError, UnicodeDecodeError, ValueError) as error:
+            failures.append(f"fixture-error:{fixture_name}:{error}")
+            continue
         for case in fixture.get("cases", []):
             kind = case.get("kind")
             validator = VALIDATORS.get(kind)
@@ -555,13 +417,9 @@ def self_test() -> int:
             expected_valid = case.get("expectValid") is True
             expected_codes = set(case.get("expectedFindings", []))
             if expected_valid != (not findings):
-                failures.append(
-                    f"{fixture_name}:{case.get('id')}:valid={not findings}:codes={sorted(codes)}"
-                )
+                failures.append(f"{fixture_name}:{case.get('id')}:valid={not findings}:codes={sorted(codes)}")
             if expected_codes and not expected_codes <= codes:
-                failures.append(
-                    f"{fixture_name}:{case.get('id')}:missing={sorted(expected_codes - codes)}"
-                )
+                failures.append(f"{fixture_name}:{case.get('id')}:missing={sorted(expected_codes - codes)}")
 
     result = {
         "schema": "wellmanifest.subactor-communication/self-test-result/v1",
@@ -587,11 +445,10 @@ def main(argv: list[str] | None = None) -> int:
         return self_test()
     try:
         document = load_json(args.document)
-    except (OSError, json.JSONDecodeError) as error:
+    except (OSError, UnicodeDecodeError, ValueError) as error:
         print(json.dumps({"valid": False, "error": str(error)}, sort_keys=True), file=sys.stderr)
         return 2
-    findings = VALIDATORS[args.kind](document)
-    return emit(args.kind, str(args.document), findings)
+    return emit(args.kind, str(args.document), VALIDATORS[args.kind](document))
 
 
 if __name__ == "__main__":
