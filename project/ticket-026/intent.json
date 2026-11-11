@@ -1,0 +1,87 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-026",
+  "summary": "Harden descriptor-relative file reads, discovery gating, and schema parity in conformance",
+  "workstream": "integration",
+  "classification": {
+    "kind": "BUG",
+    "priority": "P2",
+    "origin": "health"
+  },
+  "allowedPaths": [
+    "project/ticket-026/**",
+    "TODO.md",
+    "project/TICKETS.md",
+    "docs/communication/conformance_test.py",
+    "docs/communication/runtime_conformance.py",
+    "docs/standard/conformance.py",
+    "docs/standard/conformance_test.py",
+    "docs/standard/repository_identity.py"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md"
+  ],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "876389be4780b423f0d20eb44f32f5e6020421ad",
+    "targetBranch": "main",
+    "outcome": "Anchor root-bounded file reads via descriptor-relative O_DIRECTORY|O_NOFOLLOW traversal, eliminate digest-to-parse double-open TOCTOU, gate CLI discovery on interface-profile validation, and enforce full schema parity in usage conformance.",
+    "nonGoals": [
+      "No breaking changes to published v1/v2 JSON schemas or profile SHA-256 digests"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 25,
+    "budgets": {
+      "maxImplementationFiles": 5,
+      "maxAffectedComponents": 2,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Extract descriptor-anchored file I/O and Git repository identity inspection into docs/standard/repository_identity.py (<250L), use openat-style dir_fd O_DIRECTORY|O_NOFOLLOW traversal in runtime_conformance.py and standard/repository_identity.py, parse artifact JSON from the exact bytes hashed by check(), skip discover() on invalid interface profiles, and enforce full schema parity.",
+      "components": [
+        {
+          "name": "communication-conformance",
+          "paths": [
+            "docs/communication/runtime_conformance.py",
+            "docs/communication/conformance_test.py"
+          ]
+        },
+        {
+          "name": "usage-standard-conformance",
+          "paths": [
+            "docs/standard/conformance.py",
+            "docs/standard/repository_identity.py",
+            "docs/standard/conformance_test.py"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert descriptor-relative read and schema-parity hardening commit on docs/communication and docs/standard."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-04",
+        "commands": [
+          "python3 docs/communication/conformance.py self-test",
+          "python3 docs/standard/conformance.py check",
+          "python3 -m unittest docs/communication/conformance_test.py docs/standard/conformance_test.py",
+          "./project/governance-check.sh --base origin/main"
+        ],
+        "evidence": "All conformance checks, adversarial unit tests, ruff checks, governance-check.sh, and wellman check pass with 0 errors."
+      }
+    ]
+  }
+}

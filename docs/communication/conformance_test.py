@@ -108,6 +108,22 @@ class CommunicationConformanceHardeningTest(unittest.TestCase):
                 conformance.load_json(link_file)
             self.assertEqual(conformance.main(["check", "mcp", str(link_file)]), 2)
 
+            outside_dir = root.parent / f"{root.name}-outside"
+            outside_dir.mkdir(exist_ok=True)
+            try:
+                outside_json = outside_dir / "escape.json"
+                outside_json.write_text('{"ok": true}\n', encoding="utf-8")
+                sym_dir = root / "nested_link"
+                sym_dir.symlink_to(outside_dir, target_is_directory=True)
+                with self.assertRaises(ValueError):
+                    conformance._rt.strict_load_json(sym_dir / "escape.json", root=root)
+                with self.assertRaises(ValueError):
+                    conformance._rt.strict_load_json(Path("../escape.json"), root=root)
+            finally:
+                for child in outside_dir.glob("*"):
+                    child.unlink()
+                outside_dir.rmdir()
+
     def test_all_docs_python_modules_stay_under_500_lines(self) -> None:
         docs_root = conformance.ROOT.parent
         for py_file in sorted(docs_root.rglob("*.py")):
