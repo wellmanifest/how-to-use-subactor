@@ -1,0 +1,83 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-025",
+  "summary": "Modularize communication conformance and harden strict JSON, calendar, enum, and symlink validation",
+  "workstream": "integration",
+  "classification": {
+    "kind": "BUG",
+    "priority": "P2",
+    "origin": "health"
+  },
+  "allowedPaths": [
+    "project/ticket-025/**",
+    "TODO.md",
+    "project/TICKETS.md",
+    "docs/communication/**",
+    "docs/standard/**"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md"
+  ],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "d2a1ffc5f23f079fede449b8d4e964b76fbbd5db",
+    "targetBranch": "main",
+    "outcome": "Modularize docs/communication/conformance.py (<500 lines per module) and harden communication and standard conformance suites against bool-as-int, invalid calendar timestamps, unknown enum bypasses, unhashable TypeErrors, duplicate JSON keys, and symlinks.",
+    "nonGoals": [
+      "No breaking wire schema changes to published v1/v2 schemas or profile digests"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 25,
+    "budgets": {
+      "maxImplementationFiles": 5,
+      "maxAffectedComponents": 2,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Extract shared primitives and POA runtime-event validator into docs/communication/runtime_conformance.py while keeping delegation, MCP, CLI, and re-exports in docs/communication/conformance.py (<400L each), and harden docs/standard/conformance.py.",
+      "components": [
+        {
+          "name": "communication-conformance",
+          "paths": [
+            "docs/communication/conformance.py",
+            "docs/communication/runtime_conformance.py",
+            "docs/communication/conformance_test.py"
+          ]
+        },
+        {
+          "name": "usage-standard-conformance",
+          "paths": [
+            "docs/standard/conformance.py",
+            "docs/standard/conformance_test.py"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert modularization and hardening commit on docs/communication and docs/standard."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-04",
+        "commands": [
+          "python3 docs/communication/conformance.py self-test",
+          "python3 -m unittest docs/communication/conformance_test.py docs/standard/conformance_test.py",
+          "./project/governance-check.sh --base origin/main"
+        ],
+        "evidence": "All conformance checks, unit tests, ruff checks, governance-check.sh, and wellman check pass with 0 errors."
+      }
+    ]
+  }
+}

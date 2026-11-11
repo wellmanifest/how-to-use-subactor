@@ -10,7 +10,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-
 MODULE_PATH = Path(__file__).with_name("conformance.py")
 SPEC = importlib.util.spec_from_file_location("subactor_usage_conformance", MODULE_PATH)
 assert SPEC and SPEC.loader
@@ -77,11 +76,63 @@ class ConformanceTest(unittest.TestCase):
         conformance.validate_project(broken, "fixture", failures)
         self.assertIn("USAGE-PROJECT-001", {item["code"] for item in failures})
 
+    def test_unhashable_list_items_do_not_crash_interface_or_project_validators(self) -> None:
+        iface = conformance.load_json(conformance.ROOT / "docs/profiles/founder-cli.v1.json")
+        broken_iface = copy.deepcopy(iface)
+        broken_iface["discovery"]["expectedCommands"] = [{}]
+        broken_iface["operations"][0]["requiredEvidence"] = [{}]
+        iface_failures: list[dict[str, str]] = []
+        conformance.validate_interface(broken_iface, "fixture", iface_failures)
+        iface_codes = {item["code"] for item in iface_failures}
+        self.assertIn("USAGE-DISCOVERY-001", iface_codes)
+        self.assertIn("USAGE-OPERATION-001", iface_codes)
+
+        proj = conformance.load_json(conformance.ROOT / "docs/profiles/project-development.v1.json")
+        broken_proj = copy.deepcopy(proj)
+        broken_proj["stages"][0]["requiredInputs"] = [{}]
+        broken_proj["completion"]["requires"] = [{}]
+        proj_failures: list[dict[str, str]] = []
+        conformance.validate_project(broken_proj, "fixture", proj_failures)
+        proj_codes = {item["code"] for item in proj_failures}
+        self.assertIn("USAGE-STAGE-001", proj_codes)
+        self.assertIn("USAGE-COMPLETION-001", proj_codes)
+
+    def test_load_json_and_digest_reject_duplicate_keys_nan_and_symlinks(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            dup = root / "dup.json"
+            dup.write_text('{"id": "a", "id": "b"}\n', encoding="utf-8")
+            with self.assertRaises(ValueError):
+                conformance.load_json(dup)
+
+            nan_path = root / "nan.json"
+            nan_path.write_text('{"v": Infinity}\n', encoding="utf-8")
+            with self.assertRaises(ValueError):
+                conformance.load_json(nan_path)
+
+            real = root / "real.json"
+            real.write_text('{"id": "ok"}\n', encoding="utf-8")
+            sym = root / "sym.json"
+            sym.symlink_to(real)
+            with self.assertRaises((OSError, ValueError)):
+                conformance.load_json(sym)
+            with self.assertRaises((OSError, ValueError)):
+                conformance.digest(sym)
+
     def test_remote_url_variants_resolve_to_same_identity(self) -> None:
         expected = ("github.com", "wellmanifest/how-to-use-subactor")
-        self.assertEqual(conformance.parse_repository_remote("git@github.com:wellmanifest/how-to-use-subactor.git"), expected)
-        self.assertEqual(conformance.parse_repository_remote("https://github.com/wellmanifest/how-to-use-subactor.git"), expected)
-        self.assertEqual(conformance.parse_repository_remote("ssh://git@github.com/wellmanifest/how-to-use-subactor.git"), expected)
+        self.assertEqual(
+            conformance.parse_repository_remote("git@github.com:wellmanifest/how-to-use-subactor.git"),
+            expected,
+        )
+        self.assertEqual(
+            conformance.parse_repository_remote("https://github.com/wellmanifest/how-to-use-subactor.git"),
+            expected,
+        )
+        self.assertEqual(
+            conformance.parse_repository_remote("ssh://git@github.com/wellmanifest/how-to-use-subactor.git"),
+            expected,
+        )
 
     def test_local_path_is_not_repository_identity(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
